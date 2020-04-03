@@ -1,38 +1,49 @@
-# Commands pulled from David's proposal
+START OR STOP EVERYTHING
 
-* `venice generate pipeline [pipeline name]`
-  * Generates one of the pipelines? Not sure best way of handling this is it to have pre-built docker-compose yaml files for each pipeline?
+| **venice command** | **alias**                    | **description**                                                                                        | **Progress** |
+| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------ | ------------ |
+| venice up          | docker-compose up -d --build | launches default pipeline: zookeeper3 brokers1 ksql1 or 3 kafka-connect (cluster)postgreselasticsearch |              |
+| venice down        | docker-compose down          | stops containers                                                                                       |              |
 
-* `venice launch pipeline`
-  * trigger `docker-compose up -d` (may need to be `docker-compose up -d --build`)
+COMMAND LINE INTERFACES
 
-* `venice show sinks`
-  * Shows the information about the sink  containers
+| **venice command** | **alias**                                         | **description**                  | **Progress** |
+| ------------------ | ------------------------------------------------- | -------------------------------- | ------------ |
+| venice psql        | the long docker command (see docker-compose file) | Connect to the postgres database |              |
+| venice ksql        | the long docker command (see docker-compose file) | Connect to ksql                  |              |
+| venice elastic     |                                                   | Connect to elastic search        |              |
 
-* `venice show topics`
-  * Could either show all topics on kafka or show topics that are part of connectors
+CREATE
 
-* `venice show connections`
-  * Show the information about current connections
+| **venice command**                                           | **alias**                               | **description**        | **Progress** |
+| ------------------------------------------------------------ | --------------------------------------- | ---------------------- | ------------ |
+| venice connector new [connectortype][connectorname] [topics] | Curl POST/ PUT request to kafka-connect | create a new connector |              |
+| Venice connector add-topic [connector_name][topic(s)]        |                                         | create a new topic     |              |
+|                                                              |                                         |                        |              |
 
-* `venice new connection [sink name] [topic name]`
-  * This is where it starts to get more complex. If we want to let the user configure a whole bunch of stuff then I think one approach is this command creates a connection file and then you have another that is `venice send connection [filepath]` which would actually send the command
+READ
 
-* `venice add-topic-to-connection [topic]`
-  * Sends a PUT request to an existing topic
+| **venice command**              | **alias**                              | **description**                     | **Progress** |
+| ------------------------------- | -------------------------------------- | ----------------------------------- | ------------ |
+| venice show topics              | maybe: ksql GET request to show topics | displays existing topics            |              |
+| venice show connectors          |                                        |                                     |              |
+| venice logs [OPTIONS] CONTAINER | docker logs [OPTIONS] CONTAINER        | displays logs of each container     |              |
+| venice status                   | docker ps -a                           | show all containers                 |              |
+| venice show ip                  |                                        | show IP for kafka broker            |              |
+| venice show env                 |                                        | print the contents of the .env file |              |
 
-* `venice new sink [sink name]`
-  * Don’t know how you add containers on the fly to the network if that's possible?
+UPDATE
 
-* `log [service]` (should this be `venice log [service]`?)
-  * Prints the logs of a service to the terminal (`docker logs -f [service]`)
+| **venice command** | **alias** | **description** | **progress** |
+| ------------------ | --------- | --------------- | ------------ |
+|                    |           |                 |              |
+|                    |           |                 |              |
+|                    |           |                 |              |
 
-* `venice status [service]`
-  * Prints the status of the services to the terminal
+DELETE
 
-* `venice add task [filepath] [system]`
-  * Add a jar file to kafka streams  or a sql file to ksql  on an existing pipeline.
-
-* `show kafka-IP` (should this be `venice show kafka-IP`)
-  * Shows where (not sure what is meant here?)
-  
+| **venice command**                      | **alias**                                                                                                        | **description**                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| venice connector remove [connectorname] | [https://rmoff.net/2018/12/03/kafka-connect-cli-tricks/](https://rmoff.net/2018/12/03/kafka-connect-cli-tricks/) | \* possibly use a checkbox to allow the user to select which to remove |
+|                                         |                                                                                                                  |                                                                        |
+|                                         |                                                                                                                  |                                                                        |
