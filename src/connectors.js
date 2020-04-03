@@ -10,11 +10,11 @@ const connectorParse = args => {
   if (args.new) {
     newConnectorQuestions();
   } else {
-    showConnectors();
+    getConnectors();
   }
 };
 
-const showConnectors = () => {
+const getConnectors = () => {
   fetch(CONNECT_URL)
     .then(res => res.json())
     .then(json => log(json))

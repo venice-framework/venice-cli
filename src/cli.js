@@ -5,14 +5,16 @@ const clear = require("clear");
 const inquirer = require("inquirer");
 const connectorParse = require("./connectors");
 const getTopics = require("./topics");
+const getSchemas = require("./schemas");
 
 const log = arg => console.log(arg);
 
-//  URLS
+//  URLS - eventually these should all be docker URLS or ENV variables
 
 const SCHEMA_URL = "http://schema-registry:8081/subjects";
-const KAFKA_URL = "http://broker-1:9092";
 const KSQL_API_URL = "http://localhost:8088/ksql";
+
+// this is the logic for the CLI.
 
 export function cli(rawArgs) {
   const args = parseArgs(rawArgs);
@@ -25,23 +27,3 @@ export function cli(rawArgs) {
     getTopics();
   }
 }
-
-// TOPICS
-
-// SCHEMAS
-
-const schemaLogic = args => {
-  if (args.new) {
-    newConnector();
-  } else {
-    showSchemas();
-  }
-};
-
-const showSchemas = () => {
-  fetch(SCHEMA_URL)
-    .then(res => res.json())
-    .then(json => log(json))
-    .catch(err => log(err));
-  // TODO - LOOK to do the prettier version saved in lib/show-connectors.js
-};

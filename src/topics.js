@@ -5,7 +5,7 @@ const fetch = require("node-fetch");
 const getTopics = () => {
   const json = {
     ksql: "SHOW TOPICS;",
-    topics: {}
+    topics: {} // i'm not sure what this line does
   };
 
   fetch(KSQL_API_URL, {
@@ -19,6 +19,7 @@ const getTopics = () => {
     .catch(err => log(err));
 };
 
+// This removes topics that are returned by ksql that don't belong to the user.
 const parseTopicResponse = resp => {
   const defaultTopics = /(kafka-connect|default_ksql|ksql-connect)/;
   const topicList = resp[0].topics.filter(topic => {
