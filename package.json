@@ -1,10 +1,14 @@
 {
   "name": "venice",
   "version": "1.0.0",
-  "description": "A CLI for Venice",
-  "main": "src/index.js",
+  "description": "Venice Framework for Stream Processing Pipelines",
+  "main": "index.js",
   "bin": {
+    "@venice-framework/venice": "bin/venice",
     "venice": "bin/venice"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,11 +16,14 @@
   "keywords": [
     "kafka",
     "stream processing",
-    "CLI"
+    "CLI",
+    "create-venice",
+    "venice"
   ],
   "author": "Nancy Trinh, David Perich, Melissa Manousos",
   "license": "MIT",
   "dependencies": {
+    "arg": "^4.1.3",
     "chalk": "^4.0.0",
     "child_process": "^1.0.2",
     "clear": "^0.1.0",
@@ -25,8 +32,10 @@
     "esm": "^3.2.25",
     "figlet": "^1.3.0",
     "inquirer": "^7.1.0",
+    "json": "^9.0.6",
     "lodash": "^4.17.15",
     "minimist": "^1.2.5",
+    "node-fetch": "^2.6.0",
     "touch": "^3.1.0"
   }
 }
