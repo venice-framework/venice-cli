@@ -6,6 +6,7 @@ const inquirer = require("inquirer");
 const connectorParse = require("./connectors");
 const getTopics = require("./topics");
 const getSchemas = require("./schemas");
+const docker = require("./docker");
 
 const log = arg => console.log(arg);
 
@@ -25,5 +26,20 @@ export function cli(rawArgs) {
     schemaParse(args);
   } else if (args.topics) {
     getTopics();
+  }
+
+  switch (args._[2]) {
+    case "up":
+      docker.up();
+      break;
+    case "down":
+      docker.down();
+      break;
+    case "status":
+      docker.status();
+      break;
+    case "log":
+      docker.log(args._[3]); // this may not be the best way to accomplish this - they may want to see logs for more than 1 container
+      break;
   }
 }

@@ -1,19 +1,22 @@
 import { exec } from "child_process";
 
-const dockerUp = () => {
-  exec("docker-compose up -d --build");
-};
+module.exports = {
+  up: () => {
+    exec("docker-compose up -d --build");
+  },
 
-const dockerDown = () => {
-  exec("docker-compose down");
-};
+  down: () => {
+    exec("docker-compose down");
+  },
 
-const dockerView = () => {
-  exec("docker ps -a");
-};
+  // these two are not working currently - I think I need to pipe the output back to the console.
+  status: () => {
+    exec("docker ps");
+  },
 
-const dockerLog = option => {
-  exec(`docker log -f ${option.service}`);
+  log: option => {
+    //
+    console.log(option);
+    exec(`docker logs -f ${option}`);
+  }
 };
-
-module.exports = docker;
