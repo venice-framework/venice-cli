@@ -1,6 +1,8 @@
 // CONNECTORS
 const fetch = require("node-fetch");
-const CONNECT_URL = "http://kafka-connect:8083/connectors";
+const CONNECT_URL = "http://localhost:8083/connectors";
+
+// const CONNECT_URL = "http://kafka-connect:8083/connectors";
 const inquirer = require("inquirer");
 const getTopics = require("./topics");
 
@@ -26,35 +28,33 @@ const getConnectors = () => {
 const newConnectorQuestions = () => {
   getTopics() // TODO - this is where I got too with new connector request
     .then(setQuestions)
-    .then(questions => {
-      inquirer.prompt(questions).then(answers => {
-        console.log(JSON.stringify(answers, null, "  "));
-      });
-    })
+    .then(promptQuestions)
     .then(mergeAnswers)
-    .then(postConnector);
+    .then(postNewConnector);
 };
 // TODO - prompt user for insert/upsert
 // pull topics and have them as selectable
 // have sinks as selectable
 
 const setQuestions = topics => {
+  // Add try/catch here for if topics doesn't exist (aka the service isn't reachable)
+  // TODO - Add error message explaining that unable to get topics.
   return [
     {
       type: "list",
       name: "sink",
-      message: "which data sink are you adding a new connector to?",
+      message: "which data sink are you adding new connection?",
       choices: ["Postgres", "Elastic Search"]
     },
     {
       type: "input",
       name: "connector_name",
-      message: "What would you like to name the new connector?"
+      message: "What would you like to name the new sink connection?"
     },
     {
       type: "list",
-      name: "topics",
-      message: "which topics do you want to sink as new tables",
+      name: "topic",
+      message: "which topic do you want to sink?",
       choices: topics
     },
     {
@@ -62,28 +62,52 @@ const setQuestions = topics => {
       name: "insert_mode",
       message: "Do you want insert or upsert as insert mode?",
       choices: [
-        "insert: just create new rows. If there is a primary key clash there will be a postgres error",
-        "upsert: if primary key exists, row will be updated. If not then a new row is created"
+        "insert: Create new rows - if there is a primary key clash there will be a postgres error",
+        "upsert: Insert or update rows - if primary key exists, row will be updated. If not then a new row is created"
       ]
     }
   ];
 };
 
-const mergeAnswers = answers => {
-  let info = require("../lib/insert-connector.json");
-  info.name = "chicken";
-  log(info);
+const promptQuestions = questions => {
+  return inquirer.prompt(questions);
 };
 
-const postConnector = answers => {
-  // fetch(CONNECT_URL, {
-  //   method: "POST",
-  //   body: JSON.stringify(answers),
-  //   headers: { "Content-Type": "application/json" }
-  // })
-  //   .then(res => res.json())
-  //   .then(json => log(json)) // there is a way to turn these two steps into one method that you call. I can't remember it atm
-  //   .catch(err => log(err));
+const mergeAnswers = answers => {
+  // TODO - Need to think about the number of tasks, its based on the number of topics and the number of partitions
+  // TODO - make it an option to have multiple topics
+  // TODO - need to think about key deserialisation.
+  // TODO - how do we get the database name - currently hardcoded to buses
+  log(answers);
+  let template = require("../lib/insert-connector.json");
+  template.name = answers.connector_name;
+  template.config["topics"] = answers.topic;
+
+  if (answers.sink === "Postgres") {
+    template.config["connector.class"] =
+      "io.confluent.connect.jdbc.JdbcSinkConnector";
+    template.config["connection.url"] = "jdbc:postgresql://postgres:5432/buses";
+  }
+
+  if (/upsert/.test(answers.insert_mode)) {
+    template.config["insert.mode"] = "upsert";
+  } else {
+    template.config["insert.mode"] = "insert";
+  }
+
+  return template;
+};
+
+const postNewConnector = answers => {
+  // #TODO
+  fetch(CONNECT_URL, {
+    method: "POST",
+    body: JSON.stringify(answers),
+    headers: { "Content-Type": "application/json" }
+  })
+    .then(res => res.json())
+    .then(json => log(json)) // there is a way to turn these two steps into one method that you call. I can't remember it atm
+    .catch(err => log(err));
 };
 
 module.exports = connectorParse;
