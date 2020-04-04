@@ -1,4 +1,4 @@
-const { log, err, fetch, clear } = require("../utilis");
+const { log, err, fetch, clear } = require("../util");
 const { parseConnectorCommand } = require("./connectors");
 const { getTopics } = require("./topics");
 const getSchemas = require("./schemas");

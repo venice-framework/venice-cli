@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, err, fetch } = require("../utilis");
+const { log, logError, fetch } = require("../util");
 
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
@@ -20,7 +20,7 @@ connectors = {
     fetch(CONNECT_URL)
       .then(res => res.json())
       .then(json => log(json))
-      .catch(err => log(err));
+      .catch(err => logError(err));
 
     // TODO - LOOK to do the prettier version saved in lib/show-connectors.js
   },
@@ -32,7 +32,7 @@ connectors = {
       .then(setQuestions)
       .then(promptUserInput)
       .then(mergeAnswersWithTemplate)
-      .then(postNewConnectorRequest);
+      .then(postNewConnectorRequest)
       .catch(err => log(err));
   },
 
