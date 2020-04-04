@@ -1,33 +1,24 @@
-const exec = require("child_process").exec;
+const child = require("child_process");
+const exec = child.exec;
+const stream = child.spawn;
 const execa = require("execa");
-const chalk = require("chalk");
 const inquirer = require("inquirer");
 
+import { log, error } from '../util'; 
 // TODO:
-// move `log` and `err` to a main location that formats all the outputs (with chalk dependency)
-// centralize all the parsing of arguments into its own file?
 // add spinner to up and down commands (if possible with exec library)
 
-const log = msg => {
-  console.log(chalk.hex("#96D6FF").dim(msg));
-};
-
-const err = msg => {
-  console.log(chalk.hex("#BC390C").dim(`${msg.toUpperCase()}`));
-};
-
-const parseAnswers = (options) => {
+const parseAnswers = options => {
   let values = [];
-  for (let [key1,value1] of Object.entries(options)) {
-    for (let [key2,value2] of Object.entries(value1))
-    values.push(value2);
+  for (let [key1, value1] of Object.entries(options)) {
+    for (let [key2, value2] of Object.entries(value1)) values.push(value2);
   }
-  values = values.join(' ');
+  values = values.join(" ");
   return values;
-}
+};
 
-const askWhichServices = async (command) => {
-  const action = command === 'log' ? "monitor" : "restart";
+const askWhichServices = async command => {
+  const action = command === "log" ? "monitor" : "restart";
 
   const options = await inquirer.prompt({
     type: "checkbox",
@@ -48,7 +39,7 @@ const askWhichServices = async (command) => {
     ]
   });
   return parseAnswers(options);
-}
+};
 
 const docker = {
   down: () => {
@@ -57,15 +48,13 @@ const docker = {
     });
   },
 
-
   // also not working yet - same code as `log` - but doesn't return an error
   restart: async () => {
     const services = await askWhichServices("restart");
     try {
-     start = await execa('docker', `restart ${services}`);
-
+      start = await execa("docker", `restart ${services}`);
     } catch (err) {
-      log(err);
+      err(err);
       return;
     }
     docker.status();
@@ -84,16 +73,18 @@ const docker = {
     });
   },
 
-  
   // this command asks which of the Venice services they want to see logs for
   // they'll have to use the standard `docker logs -f` command for their own containers
   // ** WIP: not currently accepting the command **
   log: async () => {
+    const services = await askWhichServices("log");
+    const command = `logs -f ${services}`;
+
     try {
-      await execa('docker', `logs -f ${await askWhichServices("log")}`);
-      // await execa('docker', ['logs --follow zookeeper']);
+
+      await execa("docker", ['logs -f zookeeper']);
     } catch (err) {
-      log(err);
+      error(err);
     }
 
     // let log = execa('docker', [`logs -f ${await askWhichServices("log")}`]).stdout.pipe(process.stdout);
@@ -106,7 +97,7 @@ const docker = {
     //   return Promise.reject(new Error(`Failed to log ${services}`));
     // }
     // await execa.command('echo', [services]).stdout.pipe(process.stdout);
-    
+
     // execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 
     // exec(`docker logs -f ${services}` , (err, stdout, stderr) => {
