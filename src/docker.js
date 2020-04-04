@@ -16,18 +16,17 @@ const err = msg => {
   console.log(chalk.hex("#BC390C").dim(`${msg.toUpperCase()}`));
 };
 
-const parseAnswers = (options) => {
+const parseAnswers = options => {
   let values = [];
-  for (let [key1,value1] of Object.entries(options)) {
-    for (let [key2,value2] of Object.entries(value1))
-    values.push(value2);
+  for (let [key1, value1] of Object.entries(options)) {
+    for (let [key2, value2] of Object.entries(value1)) values.push(value2);
   }
-  values = values.join(' ');
+  values = values.join(" ");
   return values;
-}
+};
 
-const askWhichServices = async (command) => {
-  const action = command === 'log' ? "monitor" : "restart";
+const askWhichServices = async command => {
+  const action = command === "log" ? "monitor" : "restart";
 
   const options = await inquirer.prompt({
     type: "checkbox",
@@ -48,22 +47,24 @@ const askWhichServices = async (command) => {
     ]
   });
   return parseAnswers(options);
-}
+};
 
 const docker = {
+  // TODO add spinner or progress text
+  // TODO e.g shutting down broker 1, shutting down zookeper
   down: () => {
     exec("docker-compose down").on("close", () => {
       log("Venice has shut down.");
     });
   },
 
-
   // also not working yet - same code as `log` - but doesn't return an error
   restart: async () => {
     const services = await askWhichServices("restart");
+    log(services);
     try {
-     start = await execa('docker', `restart ${services}`);
-
+      const start = await execa("docker", `restart ${services}`);
+      console.log(start);
     } catch (err) {
       log(err);
       return;
@@ -84,13 +85,12 @@ const docker = {
     });
   },
 
-  
   // this command asks which of the Venice services they want to see logs for
   // they'll have to use the standard `docker logs -f` command for their own containers
   // ** WIP: not currently accepting the command **
   log: async () => {
     try {
-      await execa('docker', `logs -f ${await askWhichServices("log")}`);
+      await execa("docker", `logs -f ${await askWhichServices("log")}`);
       // await execa('docker', ['logs --follow zookeeper']);
     } catch (err) {
       log(err);
@@ -106,7 +106,7 @@ const docker = {
     //   return Promise.reject(new Error(`Failed to log ${services}`));
     // }
     // await execa.command('echo', [services]).stdout.pipe(process.stdout);
-    
+
     // execa('echo', ['unicorns']).stdout.pipe(process.stdout);
 
     // exec(`docker logs -f ${services}` , (err, stdout, stderr) => {
