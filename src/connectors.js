@@ -1,14 +1,13 @@
-const fetch = require("node-fetch");
 const inquirer = require("inquirer");
-const getTopics = require("./topics");
+const { getTopics } = require("./topics");
 const fs = require("fs");
+const { log, err, fetch } = require("../utilis");
 
+// log("test");
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
 
 // const CONNECT_URL = "http://kafka-connect:8083/connectors";
-
-const log = arg => console.log(arg); // move to utilities with fetch, inquirer and other things
 
 const connectorParse = args => {
   if (args.new) {

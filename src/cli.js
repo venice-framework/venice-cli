@@ -1,10 +1,6 @@
-const fetch = require("node-fetch");
-
-const parseArgs = require("minimist");
-const clear = require("clear");
-const inquirer = require("inquirer");
+const { log, err, fetch, clear } = require("../utilis");
 const connectorParse = require("./connectors");
-const getTopics = require("./topics");
+const { getTopics } = require("./topics");
 const getSchemas = require("./schemas");
 
 const log = arg => console.log(arg);
