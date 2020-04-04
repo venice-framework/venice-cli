@@ -19,11 +19,11 @@ const KSQL_API_URL = "http://localhost:8088/ksql";
 export function cli(rawArgs) {
   const args = parseArgs(rawArgs);
   log(args);
-  if (args.connectors) {
+  if (args.connectors || args.c) {
     connectorParse(args);
-  } else if (args.schemas) {
+  } else if (args.schemas || args.s) {
     schemaParse(args);
-  } else if (args.topics) {
+  } else if (args.topics || args.t) {
     getTopics();
   }
 }
