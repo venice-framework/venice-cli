@@ -17,6 +17,7 @@ const KSQL_API_URL = "http://localhost:8088/ksql";
 // this is the logic for the CLI.
 
 export function cli(rawArgs) {
+  // TODO - ADD print topics
   const args = parseArgs(rawArgs);
   log(args);
   if (args.connectors || args.c) {
