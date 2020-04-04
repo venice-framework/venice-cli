@@ -8,6 +8,14 @@ import { log, error } from '../util';
 // TODO:
 // add spinner to up and down commands (if possible with exec library)
 
+const log = msg => {
+  console.log(chalk.hex("#96D6FF").dim(msg));
+};
+
+const err = msg => {
+  console.log(chalk.hex("#BC390C").dim(`${msg.toUpperCase()}`));
+};
+
 const parseAnswers = options => {
   let values = [];
   for (let [key1, value1] of Object.entries(options)) {
@@ -42,6 +50,8 @@ const askWhichServices = async command => {
 };
 
 const docker = {
+  // TODO add spinner or progress text
+  // TODO e.g shutting down broker 1, shutting down zookeper
   down: () => {
     exec("docker-compose down").on("close", () => {
       log("Venice has shut down.");
@@ -51,6 +61,7 @@ const docker = {
   // also not working yet - same code as `log` - but doesn't return an error
   restart: async () => {
     const services = await askWhichServices("restart");
+    log(services);
     try {
       start = await execa("docker", `restart ${services}`);
     } catch (err) {
@@ -83,6 +94,8 @@ const docker = {
     try {
 
       await execa("docker", ['logs -f zookeeper']);
+      await execa("docker", `logs -f ${await askWhichServices("log")}`);
+      // await execa('docker', ['logs --follow zookeeper']);
     } catch (err) {
       error(err);
     }
