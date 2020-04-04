@@ -8,7 +8,7 @@ const getTopics = () => {
     topics: {} // i'm not sure what this line does
   };
 
-  fetch(KSQL_API_URL, {
+  return fetch(KSQL_API_URL, {
     method: "POST",
     body: JSON.stringify(json),
 
