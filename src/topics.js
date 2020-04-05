@@ -1,7 +1,22 @@
 const KSQL_API_URL = "http://localhost:8088/ksql";
-const { log, error, fetch, inquirer } = require("../util");
+const { log, error, fetch, inquirer, divider } = require("../utils");
 
 const TOPICS = {
+  parseTopicCommand: args => {
+    // TODO - make sure this switch statement works with all the aliases
+    switch (args.t) {
+      case true:
+        TOPICS.getTopics(true);
+        break;
+
+      default:
+        error(
+          "Please ensure you've entered a valid command for topics. To see commands type `venice --help`"
+        );
+        break;
+    }
+  },
+
   getTopics: (toPrint = false) => {
     const json = {
       ksql: "SHOW TOPICS;",
@@ -38,6 +53,7 @@ const TOPICS = {
   print: (topics, toPrint) => {
     if (toPrint) {
       log(`There are ${topics.length} topics:`);
+      divider();
       topics.forEach(topic => {
         log(`${topic.name} with ${topic.partitions} partitions`);
       });

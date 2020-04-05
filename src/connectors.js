@@ -1,6 +1,6 @@
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, error, fetch, inquirer } = require("../util");
+const { log, error, fetch, inquirer, divider } = require("../utils");
 const debug = require("debug");
 
 // CONSTANTS
@@ -36,7 +36,7 @@ const CONNECT = {
     }
   },
 
-  getConnectors: () => {
+  getConnectors: (print = false) => {
     fetch(CONNECT_URL)
       .then(res => res.json())
       .then(CONNECT.getAllConnectorsStatus)
@@ -72,19 +72,31 @@ const CONNECT = {
           log(`Task ${task.id} is ${task.state}`);
         }
       });
-      log("------------------------------");
+      divider();
     });
   },
 
-  newConnection: () => {
+  newConnection: async () => {
     // TODO - error parsing
     // TODO - Success message.
+    const topics = await getTopics();
+    const questions = CONNECT.setQuestions(topics);
+    const answers = await CONNECT.promptUserInput(questions);
+    const mergedAnswers = CONNECT.mergeAnswersWithTemplate(answers, topics);
 
-    getTopics()
-      .then(CONNECT.setQuestions)
-      .then(CONNECT.promptUserInput)
-      .then(CONNECT.mergeAnswersWithTemplate)
-      .then(CONNECT.postNewConnectorRequest)
+    CONNECT.postNewConnectorRequest(mergedAnswers)
+      .then(resp => {
+        if (resp.error_code) {
+          error(
+            "Something went wrong with your connection. Kafka-Connect error message: "
+          );
+          error(resp.message);
+        } else {
+          log(
+            `Successfully added ${resp.name} as connection and saved config at ./created_connectors/postgres/${resp.name}.json` // TODO - update if we get elastic search working
+          );
+        }
+      })
       .catch(err => log(err));
   },
 
@@ -125,26 +137,24 @@ const CONNECT = {
     return inquirer.prompt(questions);
   },
 
-  mergeAnswersWithTemplate: answers => {
+  mergeAnswersWithTemplate: (answers, topics) => {
     // TODO - Need to think about the number of tasks, its based on the number of topics and the number of partitions
     // TODO - make it an option to have multiple topics
     // TODO - need to think about key deserialisation.
     // TODO - how do we get the database name - currently hardcoded to buses
     // TODO - need to think about how many tasks to spin up - should be equal to the number of partitions for the topic.
     // TODO - will this filepath from anywhere?
-    console.log(answers);
     let response;
 
     if (answers.sink === "Postgres") {
-      response = CONNECT.postgresCompleteTemplate(answers);
+      response = CONNECT.postgresCompleteTemplate(answers, topics);
     }
 
     return response;
   },
 
-  postgresCompleteTemplate: answers => {
+  postgresCompleteTemplate: (answers, topics) => {
     const filepath = `./created_connectors/postgres-${answers.connector_name}.json`;
-
     let template = JSON.parse(
       fs.readFileSync("./lib/postgres-sink-connector-template.json")
     );
@@ -154,6 +164,10 @@ const CONNECT = {
     template.config["connector.class"] =
       "io.confluent.connect.jdbc.JdbcSinkConnector";
     template.config["connection.url"] = "jdbc:postgresql://postgres:5432/buses";
+    template.config["tasks.max"] = CONNECT.calculateTasks(
+      answers.topic,
+      topics
+    );
 
     if (/upsert/.test(answers.insert_mode)) {
       template.config["insert.mode"] = "upsert";
@@ -165,15 +179,19 @@ const CONNECT = {
     return template;
   },
 
-  postNewConnectorRequest: answers => {
+  calculateTasks: (selectedTopic, topics) => {
+    const info = topics.find(topic => topic.name == selectedTopic);
+    return String(info.partitions);
+  },
+
+  postNewConnectorRequest: async answers => {
     // #TODO
-    fetch(CONNECT_URL, {
+    const resp = await fetch(CONNECT_URL, {
       method: "POST",
       body: JSON.stringify(answers),
       headers: { "Content-Type": "application/json" }
-    })
-      .then(res => res.json())
-      .then(json => log(json));
+    });
+    return resp.json();
   }
 };
 
