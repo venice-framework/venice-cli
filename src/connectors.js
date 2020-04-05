@@ -1,7 +1,6 @@
-const inquirer = require("inquirer");
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, error, fetch } = require("../util");
+const { log, error, fetch, inquirer } = require("../util");
 const debug = require("debug");
 
 // CONSTANTS
@@ -20,18 +19,27 @@ const CONNECT = {
   // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
   // TODO success message if 201.
   parseConnectorCommand: args => {
-    if (args.new) {
-      CONNECT.newConnection();
-    } else {
-      CONNECT.getConnectors();
-      debug(CONNECT);
+    // TODO - make sure this switch statement works with all the aliases
+    switch (args.c) {
+      case "new":
+        CONNECT.newConnection();
+        break;
+      case true:
+        CONNECT.getConnectors();
+        break;
+
+      default:
+        error(
+          "Please ensure you've entered a valid command for connectors. To see commands type `venice --help`"
+        );
+        break;
     }
   },
 
   getConnectors: () => {
     fetch(CONNECT_URL)
       .then(res => res.json())
-      .then(json => log(json, "test"))
+      .then(json => log(json))
       .catch(err => error(err));
 
     // TODO - LOOK to do the prettier version saved in lib/show-connectors.js
