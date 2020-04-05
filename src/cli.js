@@ -2,6 +2,7 @@ const { log, err, fetch, clear, parseArgs } = require("../util");
 const { parseConnectorCommand } = require("./connectors");
 const { getTopics } = require("./topics");
 const getSchemas = require("./schemas");
+const docker = require("./docker");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
 
@@ -18,5 +19,17 @@ export function cli(rawArgs) {
     schemaParse(args);
   } else if (args.topics || args.t) {
     getTopics();
+  }
+
+  if (args.down) {
+    docker.down();
+  } else if (args.log) {
+    docker.log();
+  } else if (args.restart) {
+    docker.restart();
+  } else if (args.status) {
+    docker.status();
+  } else if (args.up) {
+    docker.up();
   }
 }
