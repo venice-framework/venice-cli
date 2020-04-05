@@ -1,8 +1,7 @@
 const KSQL_API_URL = "http://localhost:8088/ksql";
-const log = arg => console.log(arg);
-const fetch = require("node-fetch");
+const { log, error, fetch, inquirer } = require("../util");
 
-const topics = {
+const TOPICS = {
   getTopics: () => {
     const json = {
       ksql: "SHOW TOPICS;",
@@ -16,7 +15,7 @@ const topics = {
       headers: { "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8" }
     })
       .then(res => res.json())
-      .then(parseTopicResponse)
+      .then(TOPICS.parseTopicResponse)
       .catch(err => log(err));
   },
 
@@ -27,11 +26,11 @@ const topics = {
     });
 
     const topics = topicList.map(topic => topic.name);
-    console.log(topics);
+    log(topics);
     return topics;
     // # TODO - I think this might need to return a promise
   }
 };
 
 // This removes topics that are returned by ksql that don't belong to the user.
-module.exports = topics;
+module.exports = TOPICS;
