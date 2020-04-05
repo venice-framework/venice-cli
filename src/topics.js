@@ -1,5 +1,5 @@
 const KSQL_API_URL = "http://localhost:8088/ksql";
-const log = arg => console.log(arg);
+const { log, fetch } = require("../utils");
 const fetch = require("node-fetch");
 
 const topics = {

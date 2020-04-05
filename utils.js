@@ -1,6 +1,10 @@
 const chalk = require("chalk");
 
 const util = {
+  parseArgs,
+  inquirer,
+  fetch,
+  clear,
   log: msg => {
     console.log(chalk.hex("#96D6FF").dim(msg));
   },

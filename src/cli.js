@@ -7,9 +7,7 @@ const getTopics = require("./topics");
 const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
 
-const log = arg => console.log(arg); // can remove?
-
-const { log, err, fetch, clear } = require("../utilis");
+const { log, err, fetch, clear } = require("../utils");
 const { parseConnectorCommand } = require("./connectors");
 const { getTopics } = require("./topics");
 const getSchemas = require("./schemas");

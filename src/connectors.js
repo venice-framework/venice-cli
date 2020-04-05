@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, err, fetch } = require("../utilis");
+const { log, err, fetch } = require("../utils");
 
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
