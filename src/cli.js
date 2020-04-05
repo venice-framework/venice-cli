@@ -12,13 +12,13 @@ const KSQL_API_URL = "http://localhost:8088/ksql";
 export function cli(rawArgs) {
   // TODO - ADD print topics
   const args = parseArgs(rawArgs);
-  log(args);
+  console.log(args);
   if (args.connectors || args.c) {
     parseConnectorCommand(args);
   } else if (args.schemas || args.s) {
     schemaParse(args);
   } else if (args.topics || args.t) {
-    getTopics();
+    getTopics(true); // pass in true here so that it will print. False is default value so topics don't get printed for internal getTopic requests
   }
 
   if (args.down) {

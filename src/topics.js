@@ -2,10 +2,10 @@ const KSQL_API_URL = "http://localhost:8088/ksql";
 const { log, error, fetch, inquirer } = require("../util");
 
 const TOPICS = {
-  getTopics: () => {
+  getTopics: (toPrint = false) => {
     const json = {
       ksql: "SHOW TOPICS;",
-      topics: {} // i'm not sure what this line does
+      topics: {} // I'm not sure what this line does on the request
     };
 
     return fetch(KSQL_API_URL, {
@@ -16,6 +16,7 @@ const TOPICS = {
     })
       .then(res => res.json())
       .then(TOPICS.parseTopicResponse)
+      .then(topics => TOPICS.print(topics, toPrint))
       .catch(err => log(err));
   },
 
@@ -25,10 +26,24 @@ const TOPICS = {
       return !defaultTopics.test(topic.name);
     });
 
-    const topics = topicList.map(topic => topic.name);
-    log(topics);
+    const topics = topicList.map(topic => {
+      return {
+        name: topic.name,
+        partitions: topic.replicaInfo.reduce((acc, cur) => acc + cur)
+      };
+    });
     return topics;
-    // # TODO - I think this might need to return a promise
+  },
+
+  print: (topics, toPrint) => {
+    const numberOfTopics = topics.length;
+    if (toPrint) {
+      log(`There are ${numberOfTopics} topics:`);
+      topics.forEach(topic => {
+        log(`${topic.name} with ${topic.partitions} partitions`);
+      });
+    }
+    return topics;
   }
 };
 
