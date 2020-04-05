@@ -36,9 +36,8 @@ const TOPICS = {
   },
 
   print: (topics, toPrint) => {
-    const numberOfTopics = topics.length;
     if (toPrint) {
-      log(`There are ${numberOfTopics} topics:`);
+      log(`There are ${topics.length} topics:`);
       topics.forEach(topic => {
         log(`${topic.name} with ${topic.partitions} partitions`);
       });
