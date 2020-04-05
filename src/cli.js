@@ -1,12 +1,7 @@
-const fetch = require("node-fetch"); // can remove?
-const parseArgs = require("minimist");
-const clear = require("clear"); // can remove?
-const inquirer = require("inquirer"); // can remove?
-
 const getTopics = require("./topics");
 const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
-const { log, err, fetch, clear, parseArgs } = require("../util");
+const { log, parseArgs } = require("../utils");
 const { parseConnectorCommand } = require("./connectors");
 
 //  URLS - eventually these should all be docker URLS or ENV variables

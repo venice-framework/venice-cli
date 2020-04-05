@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, error, fetch } = require("../util");
+const { log, error, fetch } = require("../utils");
 const debug = require("debug");
 
 // CONSTANTS
