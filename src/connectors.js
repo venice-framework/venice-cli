@@ -39,15 +39,47 @@ const CONNECT = {
   getConnectors: () => {
     fetch(CONNECT_URL)
       .then(res => res.json())
-      .then(json => log(json))
+      .then(CONNECT.getAllConnectorsStatus)
+      .then(CONNECT.printConnectors)
       .catch(err => error(err));
+  },
 
-    // TODO - LOOK to do the prettier version saved in lib/show-connectors.js
+  getAllConnectorsStatus: connectors => {
+    return Promise.all(
+      connectors.map(async name => {
+        let status = await fetch(`${CONNECT_URL}/${name}/status`);
+        return status.json();
+      })
+    );
+  },
+
+  printConnectors: connectors => {
+    log(`There are ${connectors.length} connectors:`);
+    connectors.forEach(con => {
+      if (con.state === "FAILED") {
+        error(
+          `${con.name} is ${con.connector.state} with ${con.tasks.length} tasks`
+        );
+      } else {
+        log(
+          `${con.name} is ${con.connector.state} with ${con.tasks.length} tasks`
+        );
+      }
+      con.tasks.forEach(task => {
+        if (task.state === "FAILED") {
+          error(`Task ${task.id} is ${task.state}`);
+        } else {
+          log(`Task ${task.id} is ${task.state}`);
+        }
+      });
+      log("------------------------------");
+    });
   },
 
   newConnection: () => {
     // TODO - error parsing
     // TODO - Success message.
+
     getTopics()
       .then(CONNECT.setQuestions)
       .then(CONNECT.promptUserInput)
@@ -99,22 +131,29 @@ const CONNECT = {
     // TODO - need to think about key deserialisation.
     // TODO - how do we get the database name - currently hardcoded to buses
     // TODO - need to think about how many tasks to spin up - should be equal to the number of partitions for the topic.
-
-    log(answers);
-    let template = JSON.parse(
-      fs.readFileSync("../lib/postgres-sink-connector-template.json")
-    );
-
-    log(template);
-    template.name = answers.connector_name;
-    template.config["topics"] = answers.topic;
+    // TODO - will this filepath from anywhere?
+    console.log(answers);
+    let response;
 
     if (answers.sink === "Postgres") {
-      template.config["connector.class"] =
-        "io.confluent.connect.jdbc.JdbcSinkConnector";
-      template.config["connection.url"] =
-        "jdbc:postgresql://postgres:5432/buses";
+      response = CONNECT.postgresCompleteTemplate(answers);
     }
+
+    return response;
+  },
+
+  postgresCompleteTemplate: answers => {
+    const filepath = `./created_connectors/postgres-${answers.connector_name}.json`;
+
+    let template = JSON.parse(
+      fs.readFileSync("./lib/postgres-sink-connector-template.json")
+    );
+
+    template.name = answers.connector_name;
+    template.config["topics"] = answers.topic;
+    template.config["connector.class"] =
+      "io.confluent.connect.jdbc.JdbcSinkConnector";
+    template.config["connection.url"] = "jdbc:postgresql://postgres:5432/buses";
 
     if (/upsert/.test(answers.insert_mode)) {
       template.config["insert.mode"] = "upsert";
@@ -122,6 +161,7 @@ const CONNECT = {
       template.config["insert.mode"] = "insert";
     }
 
+    fs.writeFileSync(filepath, JSON.stringify(template));
     return template;
   },
 
@@ -133,7 +173,7 @@ const CONNECT = {
       headers: { "Content-Type": "application/json" }
     })
       .then(res => res.json())
-      .then(json => log(json)); // there is a way to turn these two steps into one method that you call. I can't remember it atm
+      .then(json => log(json));
   }
 };
 
