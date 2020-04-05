@@ -77,8 +77,6 @@ const CONNECT = {
   },
 
   newConnection: async () => {
-    // TODO - error parsing
-    // TODO - Success message.
     const topics = await getTopics();
     const questions = CONNECT.setQuestions(topics);
     const answers = await CONNECT.promptUserInput(questions);
@@ -92,6 +90,7 @@ const CONNECT = {
           );
           error(resp.message);
         } else {
+          fs.writeFileSync(filepath, JSON.stringify(mergedAnswers));
           log(
             `Successfully added ${resp.name} as connection and saved config at ./created_connectors/postgres/${resp.name}.json` // TODO - update if we get elastic search working
           );
@@ -175,7 +174,6 @@ const CONNECT = {
       template.config["insert.mode"] = "insert";
     }
 
-    fs.writeFileSync(filepath, JSON.stringify(template));
     return template;
   },
 
