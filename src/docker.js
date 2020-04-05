@@ -1,4 +1,7 @@
 const exec = require("child_process").exec;
+const execPromise = require("child-process-promise").exec;
+// const execa = require("execa");
+const Spinner = require("clui").Spinner;
 
 import { Docker } from "docker-cli-js";
 import { log, error } from "../utils";
@@ -15,10 +18,14 @@ const multiple = inquirer.selectMultipleServices;
 const dockerInstance = new Docker();
 
 const docker = {
-  // TODO add spinner or progress text e.g shutting down broker 1, shutting down zookeper
-  // TODO confirmclear this won't shut down all docker compose files!
+  // TODO confirm this won't shut down all docker compose files!
   down: () => {
-    exec("docker-compose down").on("close", () => {
+    const status = new Spinner(log("Venice is shutting down, please wait..."));
+    const launch = exec("docker-compose up -d --build");
+    status.start();
+
+    launch.on("close", () => {
+      status.stop();
       log("Venice has shut down.");
     });
   },
@@ -37,21 +44,29 @@ const docker = {
   },
 
   status: () => {
-    exec("docker ps", (err, stdout, stderr) => {
-      log(stdout.trim());
+    const status = new Spinner(log("Fetching Venice status, please wait..."));
+    let msg;
+    const launch = exec("docker ps", (err, stdout, stderr) => {
+      msg = stdout.trim();
+    });
+    status.start();
+    launch.on("close", () => {
+      status.stop();
+      log(msg);
     });
   },
 
   // TODO: add an async await to make sure this actually runs
   // return error if there is a conflict (another container with same name, etc.)
   up: () => {
-    try {
-      exec("docker-compose up -d --build").on("close", () => {
-        log("Venice is now running.");
-      });
-    } catch (err) {
-      err;
-    }
+    const status = new Spinner(log("Venice is starting, please wait..."));
+    const launch = exec("docker-compose up -d --build");
+    status.start();
+
+    launch.on("close", () => {
+      status.stop();
+      log("Venice is now running.");
+    });
   },
 
   // TODO: not formatting error correctly - refactor to use promises error handling
