@@ -1,14 +1,15 @@
-const { log, err, fetch, clear, parseArgs } = require("../util");
-const { parseConnectorCommand } = require("./connectors");
-const { getTopics } = require("./topics");
-const getSchemas = require("./schemas");
+const getTopics = require("./topics");
+const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
+const { log, parseArgs } = require("../utils");
+const { parseConnectorCommand } = require("./connectors");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
 
 const SCHEMA_URL = "http://schema-registry:8081/subjects";
 const KSQL_API_URL = "http://localhost:8088/ksql";
 
+// this is the logic for the CLI.
 export function cli(rawArgs) {
   // TODO - ADD print topics
   const args = parseArgs(rawArgs);
