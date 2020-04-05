@@ -5,9 +5,12 @@
     "connection.url": "jdbc:postgresql://postgres:5432/buses",
     "connection.user": "venice_user",
     "connection.password": "venice",
-    "topics": "bus_locations",
+    "topics": "",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "auto.create": "true",
     "auto.evolve": "true",
-    "insert.mode": "insert"
+    "insert.mode": "",
+    "tasks.max": "1"
   }
 }

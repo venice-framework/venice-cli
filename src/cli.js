@@ -1,4 +1,4 @@
-const { log, err, fetch, clear } = require("../util");
+const { log, err, fetch, clear, parseArgs } = require("../util");
 const { parseConnectorCommand } = require("./connectors");
 const { getTopics } = require("./topics");
 const getSchemas = require("./schemas");
@@ -13,7 +13,7 @@ export function cli(rawArgs) {
   const args = parseArgs(rawArgs);
   log(args);
   if (args.connectors || args.c) {
-    connectorParse(args);
+    parseConnectorCommand(args);
   } else if (args.schemas || args.s) {
     schemaParse(args);
   } else if (args.topics || args.t) {
