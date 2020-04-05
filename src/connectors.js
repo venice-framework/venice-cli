@@ -1,14 +1,14 @@
 const inquirer = require("inquirer");
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, logError, fetch } = require("../util");
+const { log, error, fetch } = require("../util");
 const debug = require("debug");
 
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
 // const CONNECT_URL = "http://kafka-connect:8083/connectors";
 
-const connectors = {
+const CONNECT = {
   // DOCS -    // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
   // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
   // Confirm we have kafka-connect in distributed mode
@@ -21,10 +21,10 @@ const connectors = {
   // TODO success message if 201.
   parseConnectorCommand: args => {
     if (args.new) {
-      connectors.newConnectionProcess();
+      CONNECT.newConnection();
     } else {
-      connectors.getConnectors();
-      debug(connectors);
+      CONNECT.getConnectors();
+      debug(CONNECT);
     }
   },
 
@@ -32,19 +32,19 @@ const connectors = {
     fetch(CONNECT_URL)
       .then(res => res.json())
       .then(json => log(json, "test"))
-      .catch(err => logError(err));
+      .catch(err => error(err));
 
     // TODO - LOOK to do the prettier version saved in lib/show-connectors.js
   },
 
-  newConnectionProcess: () => {
+  newConnection: () => {
     // TODO - error parsing
     // TODO - Success message.
     getTopics()
-      .then(setQuestions)
-      .then(promptUserInput)
-      .then(mergeAnswersWithTemplate)
-      .then(postNewConnectorRequest)
+      .then(CONNECT.setQuestions)
+      .then(CONNECT.promptUserInput)
+      .then(CONNECT.mergeAnswersWithTemplate)
+      .then(CONNECT.postNewConnectorRequest)
       .catch(err => log(err));
   },
 
@@ -129,4 +129,4 @@ const connectors = {
   }
 };
 
-module.exports = connectors;
+module.exports = CONNECT;
