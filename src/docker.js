@@ -1,57 +1,21 @@
-const child = require("child_process");
-const exec = child.exec;
-const stream = child.spawn;
-const execa = require("execa");
-const inquirer = require("inquirer");
+const exec = require("child_process").exec;
 
-import { log, error } from '../util'; 
+import { Docker } from "docker-cli-js";
+import { log, error } from "../util";
+const inquirer = require("../lib/inquirer");
+const single = inquirer.selectSingleService;
+const multiple = inquirer.selectMultipleServices;
+
+// import { selectSingleService, selectMultipleServices } from "../lib/inquirer";
+// import { askWhichServices } from "../lib/inquirer";
+
 // TODO:
 // add spinner to up and down commands (if possible with exec library)
 
-const log = msg => {
-  console.log(chalk.hex("#96D6FF").dim(msg));
-};
-
-const err = msg => {
-  console.log(chalk.hex("#BC390C").dim(`${msg.toUpperCase()}`));
-};
-
-const parseAnswers = options => {
-  let values = [];
-  for (let [key1, value1] of Object.entries(options)) {
-    for (let [key2, value2] of Object.entries(value1)) values.push(value2);
-  }
-  values = values.join(" ");
-  return values;
-};
-
-const askWhichServices = async command => {
-  const action = command === "log" ? "monitor" : "restart";
-
-  const options = await inquirer.prompt({
-    type: "checkbox",
-    name: "logs",
-    message:
-      `Select the Venice services which you would like to ${action}.\n` +
-      "Press enter/return with no selection to exit.\n",
-    choices: [
-      "broker-1",
-      "broker-2",
-      "broker-3",
-      "elasticsearch",
-      "kafka-connect",
-      "ksql-server",
-      "postgres",
-      "schema-registry",
-      "zookeeper"
-    ]
-  });
-  return parseAnswers(options);
-};
+const dockerInstance = new Docker();
 
 const docker = {
-  // TODO add spinner or progress text
-  // TODO e.g shutting down broker 1, shutting down zookeper
+  // TODO add spinner or progress text e.g shutting down broker 1, shutting down zookeper
   down: () => {
     exec("docker-compose down").on("close", () => {
       log("Venice has shut down.");
@@ -71,6 +35,8 @@ const docker = {
     docker.status();
     log(`${services} restarted successfully`);
   },
+  //restartMany(services, options) - Restart services
+  // restartOne(service, options) - Restart service
 
   status: () => {
     exec("docker ps", (err, stdout, stderr) => {
@@ -88,34 +54,15 @@ const docker = {
   // they'll have to use the standard `docker logs -f` command for their own containers
   // ** WIP: not currently accepting the command **
   log: async () => {
-    const services = await askWhichServices("log");
-    const command = `logs -f ${services}`;
+    // determine which service they want to log - can only log 1 at a time
+    const services = await single("log");
 
+    // pipe logs to the console
     try {
-
-      await execa("docker", ['logs -f zookeeper']);
-      await execa("docker", `logs -f ${await askWhichServices("log")}`);
-      // await execa('docker', ['logs --follow zookeeper']);
+      dockerInstance.command(`logs -f ${services}`);
     } catch (err) {
-      error(err);
+      error(`There's no running container called ${services}`);
     }
-
-    // let log = execa('docker', [`logs -f ${await askWhichServices("log")}`]).stdout.pipe(process.stdout);
-    // let services = await askWhichServices("log");
-    // log(`from in "log": ${services}`);
-
-    // const log = await execa('docker', [`logs -f ${services}`]).stdout.pipe(process.stdout);
-
-    // if (log.failed) {
-    //   return Promise.reject(new Error(`Failed to log ${services}`));
-    // }
-    // await execa.command('echo', [services]).stdout.pipe(process.stdout);
-
-    // execa('echo', ['unicorns']).stdout.pipe(process.stdout);
-
-    // exec(`docker logs -f ${services}` , (err, stdout, stderr) => {
-    //   log(stdout.trim());
-    // });
   }
 };
 
