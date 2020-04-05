@@ -1,11 +1,10 @@
-const fetch = require("node-fetch"); // can remove?
 const parseArgs = require("minimist");
-const clear = require("clear"); // can remove?
-const inquirer = require("inquirer"); // can remove?
 const connectorParse = require("./connectors");
 const getTopics = require("./topics");
 const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
+
+const { startCLI } = require("./ksql");
 
 const log = arg => console.log(arg); // can remove?
 
@@ -23,9 +22,9 @@ export function cli(rawArgs) {
     schemaParse(args);
   } else if (args.topics) {
     getTopics();
-  }
-
-  if (args.down) {
+  } else if (args.ksql) {
+    startCLI();
+  } else if (args.down) {
     docker.down();
   } else if (args.log) {
     docker.log();

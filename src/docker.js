@@ -1,7 +1,5 @@
-const exec = require("child_process").exec;
-
 import { Docker } from "docker-cli-js";
-import { log, error } from "../util";
+import { log, error, exec } from "../utils";
 const inquirer = require("../lib/inquirer");
 const single = inquirer.selectSingleService;
 const multiple = inquirer.selectMultipleServices;
