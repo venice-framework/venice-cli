@@ -1,4 +1,8 @@
 const chalk = require("chalk");
+const fetch = require("node-fetch");
+const clear = require("clear");
+const parseArgs = require("minimist");
+const inquirer = require("inquirer");
 
 const util = {
   parseArgs,

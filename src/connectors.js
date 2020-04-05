@@ -1,38 +1,50 @@
 const inquirer = require("inquirer");
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, err, fetch } = require("../utils");
+const { log, error, fetch } = require("../util");
+const debug = require("debug");
 
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
 // const CONNECT_URL = "http://kafka-connect:8083/connectors";
 
-connectors = {
+const CONNECT = {
+  // DOCS -    // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
+  // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
+  // Confirm we have kafka-connect in distributed mode
+  // TODO - change connector so its not hard coded to buses. Maybe we just have venice database.
+  // TODO success message if 201.
+  // TODO Connectors Status
+  // TODO connector plugings
+  // get installed plugins in the cluster
+  // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
+  // TODO success message if 201.
   parseConnectorCommand: args => {
     if (args.new) {
-      newConnectionProcess();
+      CONNECT.newConnection();
     } else {
-      getConnectors();
+      CONNECT.getConnectors();
+      debug(CONNECT);
     }
   },
 
   getConnectors: () => {
     fetch(CONNECT_URL)
       .then(res => res.json())
-      .then(json => log(json))
-      .catch(err => log(err));
+      .then(json => log(json, "test"))
+      .catch(err => error(err));
 
     // TODO - LOOK to do the prettier version saved in lib/show-connectors.js
   },
 
-  newConnectionProcess: () => {
+  newConnection: () => {
     // TODO - error parsing
     // TODO - Success message.
     getTopics()
-      .then(setQuestions)
-      .then(promptUserInput)
-      .then(mergeAnswersWithTemplate)
-      .then(postNewConnectorRequest);
+      .then(CONNECT.setQuestions)
+      .then(CONNECT.promptUserInput)
+      .then(CONNECT.mergeAnswersWithTemplate)
+      .then(CONNECT.postNewConnectorRequest)
       .catch(err => log(err));
   },
 
@@ -78,8 +90,14 @@ connectors = {
     // TODO - make it an option to have multiple topics
     // TODO - need to think about key deserialisation.
     // TODO - how do we get the database name - currently hardcoded to buses
+    // TODO - need to think about how many tasks to spin up - should be equal to the number of partitions for the topic.
+
     log(answers);
-    let template = require("../lib/insert-connector.json");
+    let template = JSON.parse(
+      fs.readFileSync("../lib/postgres-sink-connector-template.json")
+    );
+
+    log(template);
     template.name = answers.connector_name;
     template.config["topics"] = answers.topic;
 
@@ -111,4 +129,4 @@ connectors = {
   }
 };
 
-module.exports = connectors;
+module.exports = CONNECT;

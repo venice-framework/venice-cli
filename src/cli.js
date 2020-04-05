@@ -2,15 +2,12 @@ const fetch = require("node-fetch"); // can remove?
 const parseArgs = require("minimist");
 const clear = require("clear"); // can remove?
 const inquirer = require("inquirer"); // can remove?
-const connectorParse = require("./connectors");
+
 const getTopics = require("./topics");
 const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
-
-const { log, err, fetch, clear } = require("../utils");
+const { log, err, fetch, clear, parseArgs } = require("../util");
 const { parseConnectorCommand } = require("./connectors");
-const { getTopics } = require("./topics");
-const getSchemas = require("./schemas");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
 
@@ -23,7 +20,7 @@ export function cli(rawArgs) {
   const args = parseArgs(rawArgs);
   log(args);
   if (args.connectors || args.c) {
-    connectorParse(args);
+    parseConnectorCommand(args);
   } else if (args.schemas || args.s) {
     schemaParse(args);
   } else if (args.topics || args.t) {
