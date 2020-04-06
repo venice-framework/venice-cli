@@ -4,6 +4,13 @@ const { log, error, fetch, divider } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
 const debug = require("debug");
 
+const validConnectorsCommands = `
+  "venice connectors": prints all current connectors and their status
+  "venice connectors new": process to create a new connection
+
+  "venice -c" is an alias for "venice connectors" and will work with all of these commands
+`;
+
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
 // const CONNECT_URL = "http://kafka-connect:8083/connectors";
@@ -13,30 +20,37 @@ const CONNECT = {
   // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
   // TODO - Confirm we have kafka-connect in distributed mode
   // TODO - change connector so its not hard coded to buses. Maybe we just have venice database.
-  parseConnectorCommand: args => {
-    // TODO - make sure this switch statement works with all the aliases
-    switch (args.c) {
+  parseConnectorCommand: command => {
+    console.log(command);
+    switch (command) {
       case "new":
         CONNECT.newConnection();
         break;
-      case true:
-        CONNECT.getConnectors();
+      case false:
+        CONNECT.printTopics();
         break;
 
       default:
         error(
-          "Please ensure you've entered a valid command for connectors. To see commands type `venice --help`"
+          `"${command}" is not a valid connector command. The list of valid commands are:
+
+          ${validConnectorsCommands}`
         );
         break;
     }
   },
 
-  // TODO - refactor this so that get Connectors doesn't print. See TOPICS
-  getConnectors: (print = false) => {
-    fetch(CONNECT_URL)
-      .then(res => res.json())
+  printTopics: () => {
+    CONNECT.getConnectors()
       .then(CONNECT.getAllConnectorsStatus)
       .then(CONNECT.printConnectors)
+      .catch(err => error(err));
+  },
+
+  // TODO - refactor this so that get Connectors doesn't print. See TOPICS
+  getConnectors: () => {
+    return fetch(CONNECT_URL)
+      .then(res => res.json())
       .catch(err => error(err));
   },
 
@@ -50,6 +64,11 @@ const CONNECT = {
   },
 
   printConnectors: connectors => {
+    if (connectors.length === 0) {
+      log("There are no connectors currently ");
+      return;
+    }
+
     log(`There are ${connectors.length} connectors:`);
     connectors.forEach(con => {
       if (con.state === "FAILED") {

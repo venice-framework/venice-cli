@@ -21,6 +21,15 @@ const util = {
     );
   },
 
+  // TODO add CLI error for invalid command.
+
+  // module.exports = (message, exit) => {
+  // console.error(message)
+  // exit && process.exit(1)
+  // }
+  //
+  // https://timber.io/blog/creating-a-real-world-cli-app-with-node/
+
   parseAnswers: options => {
     let values = [];
     for (let [key1, value1] of Object.entries(options)) {

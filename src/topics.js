@@ -6,20 +6,29 @@ const { promptUserInput } = require("../lib/inquirer");
 const KSQL_API_URL = "http://localhost:8088/ksql";
 const KSQL_QUERY_URL = "http://localhost:8088/query";
 
+const validTopicCommands = `
+  "venice topics": prints all the current topics
+  "venice topics show": print a specific topic
+
+  "venice -t" is an alias for "venice topics" and will work with all of these commands
+`;
+
 const TOPICS = {
-  parseTopicCommand: args => {
+  parseTopicCommand: command => {
     // TODO - make sure this switch statement works with all the aliases
-    switch (args.t) {
-      case "show":
+    switch (command) {
+      case "print":
         TOPICS.showTopic();
         break;
-      case true:
+      case false:
         TOPICS.printTopics();
         break;
 
       default:
         error(
-          "Please ensure you've entered a valid command for topics. To see commands type `venice --help`"
+          `"${command}" is not a valid topic command. The list of valid commands are:
+
+          ${validTopicCommands}`
         );
         break;
     }
@@ -37,20 +46,6 @@ const TOPICS = {
     });
     return resp.json();
   },
-
-  // logChunks: async response => {
-  //   const stream = response.body;
-  //   const myREPL = child.spawn("node");
-  //   myREPL.stdout.pipe(process.stdout, { end: false });
-  //   myREPL.stdout.pipe(response.body.readable);
-  //   myREPL.on("exit", function(code) {
-  //     process.exit(code);
-  //   });
-  //   // process.stdin.resume();
-  //   // for await (const chunk of response.body) {
-  //   //   console.log(chunk);
-  //   // }
-  // },
 
   ksqlQuery: async json => {
     return await fetch(KSQL_QUERY_URL, {
@@ -102,6 +97,10 @@ const TOPICS = {
   },
 
   printAllTopics: topics => {
+    if (topics.length === 0) {
+      log("There are no topics currently ");
+      return;
+    }
     log(`There are ${topics.length} topics:`);
     divider();
     topics.forEach(topic => {
