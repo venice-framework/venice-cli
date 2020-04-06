@@ -80,27 +80,4 @@ export function cli(rawArgs) {
     default:
       break;
   }
-  // console.log(args);
-
-  // const args = parseArgs(rawArgs);
-  // console.log(args);
-  // if (args.connectors || args.c) {
-  //   parseConnectorCommand(args);
-  // } else if (args.schemas || args.s) {
-  //   schemaParse(args);
-  // } else if (args.topics || args.t) {
-  //   parseTopicCommand(args);
-  // }
-
-  // if (args.down) {
-  //   docker.down();
-  // } else if (args.log) {
-  //   docker.log();
-  // } else if (args.restart) {
-  //   docker.restart();
-  // } else if (args.status) {
-  //   docker.status();
-  // } else if (args.up) {
-  //   docker.up();
-  // }
 }

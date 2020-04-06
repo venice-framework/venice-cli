@@ -17,7 +17,7 @@ const TOPICS = {
   parseTopicCommand: command => {
     // TODO - make sure this switch statement works with all the aliases
     switch (command) {
-      case "print":
+      case "show":
         TOPICS.showTopic();
         break;
       case false:

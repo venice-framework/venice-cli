@@ -21,7 +21,6 @@ const CONNECT = {
   // TODO - Confirm we have kafka-connect in distributed mode
   // TODO - change connector so its not hard coded to buses. Maybe we just have venice database.
   parseConnectorCommand: command => {
-    console.log(command);
     switch (command) {
       case "new":
         CONNECT.newConnection();
@@ -47,7 +46,6 @@ const CONNECT = {
       .catch(err => error(err));
   },
 
-  // TODO - refactor this so that get Connectors doesn't print. See TOPICS
   getConnectors: () => {
     return fetch(CONNECT_URL)
       .then(res => res.json())
@@ -96,6 +94,7 @@ const CONNECT = {
     const questions = CONNECT.setQuestions(topics);
     const answers = await promptUserInput(questions);
     const mergedAnswers = CONNECT.mergeAnswersWithTemplate(answers, topics);
+    const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
 
     CONNECT.postNewConnectorRequest(mergedAnswers)
       .then(resp => {
@@ -105,7 +104,7 @@ const CONNECT = {
           );
           error(resp.message);
         } else {
-          fs.writeFileSync(filepath, JSON.stringify(mergedAnswers));
+          fs.writeFileSync(newConnectorFilePath, JSON.stringify(mergedAnswers));
           log(
             `Successfully added ${resp.name} as connection and saved config at ./created_connectors/postgres/${resp.name}.json` // TODO - update if we get elastic search working
           );
@@ -153,9 +152,10 @@ const CONNECT = {
 
   mergeAnswersWithTemplate: (answers, topics) => {
     // TODO - make it an option to have multiple topics
+    // TODO - Upsert needs to work with PK
     // TODO - need to think about key deserialisation.
     // TODO - how do we get the database name - currently hardcoded to buses
-    // TODO - will this filepath from anywhere?
+    // TODO - will this filepath work from anywhere?
     let response;
 
     if (answers.sink === "Postgres") {
@@ -166,7 +166,6 @@ const CONNECT = {
   },
 
   postgresCompleteTemplate: (answers, topics) => {
-    const filepath = `./created_connectors/postgres-${answers.connector_name}.json`;
     let template = JSON.parse(
       fs.readFileSync("./lib/postgres-sink-connector-template.json")
     );
@@ -201,6 +200,8 @@ const CONNECT = {
       body: JSON.stringify(answers),
       headers: { "Content-Type": "application/json" }
     });
+
+    console.log(resp.json());
     return resp.json();
   }
 };
