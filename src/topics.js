@@ -1,12 +1,16 @@
 const KSQL_API_URL = "http://localhost:8088/ksql";
-const { log, error, fetch, inquirer, divider } = require("../utils");
+const { log, error, fetch, divider } = require("../utils");
+const { promptUserInput } = require("../lib/inquirer");
 
 const TOPICS = {
   parseTopicCommand: args => {
     // TODO - make sure this switch statement works with all the aliases
     switch (args.t) {
+      case "show":
+        TOPICS.showTopic();
+        break;
       case true:
-        TOPICS.getTopics(true);
+        TOPICS.printTopics();
         break;
 
       default:
@@ -17,22 +21,38 @@ const TOPICS = {
     }
   },
 
-  getTopics: (toPrint = false) => {
+  kqslPOST: async json => {
+    const resp = await fetch(KSQL_API_URL, {
+      method: "POST",
+      body: JSON.stringify(json),
+
+      headers: { "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8" }
+    });
+
+    return resp.json();
+  },
+
+  getTopics: async (toPrint = false) => {
     const json = {
       ksql: "SHOW TOPICS;",
       topics: {} // I'm not sure what this line does on the request
     };
 
-    return fetch(KSQL_API_URL, {
-      method: "POST",
-      body: JSON.stringify(json),
+    const resp = await TOPICS.kqslPOST(json);
+    const topics = await TOPICS.parseTopicResponse(resp);
 
-      headers: { "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8" }
-    })
-      .then(res => res.json())
-      .then(TOPICS.parseTopicResponse)
-      .then(topics => TOPICS.print(topics, toPrint))
-      .catch(err => log(err));
+    if (!topics) {
+      throw new Error(
+        "Unable to get topics, please make sure kafka brokers are running"
+      );
+    }
+    return topics;
+  },
+
+  printTopics: async () => {
+    const topics = await TOPICS.getTopics();
+    console.log(topics);
+    await TOPICS.printAllTopics(topics);
   },
 
   parseTopicResponse: resp => {
@@ -50,15 +70,44 @@ const TOPICS = {
     return topics;
   },
 
-  print: (topics, toPrint) => {
-    if (toPrint) {
-      log(`There are ${topics.length} topics:`);
-      divider();
-      topics.forEach(topic => {
-        log(`${topic.name} with ${topic.partitions} partitions`);
-      });
-    }
+  printAllTopics: topics => {
+    log(`There are ${topics.length} topics:`);
+    divider();
+    topics.forEach(topic => {
+      log(`${topic.name} with ${topic.partitions} partitions`);
+    });
     return topics;
+  },
+
+  showTopic: async () => {
+    const topics = await TOPICS.getTopics();
+    const questions = TOPICS.setQuestions(topics);
+    const answers = await promptUserInput(questions);
+    console.log(answers);
+  },
+
+  setQuestions: topics => {
+    if (!topics) {
+      throw new Error(
+        "Unable to get topics, please make sure kafka brokers are running"
+      );
+    } else {
+      return [
+        {
+          type: "list",
+          name: "sink",
+          message: "Which topic do you want to print",
+          choices: topics
+        },
+        {
+          type: "list",
+          name: "topic",
+          message:
+            "Would you like to follow new entries or print from the beginning THEN follow new entries?",
+          choices: ["From beginning and follow", "Only follow"]
+        }
+      ];
+    }
   }
 };
 

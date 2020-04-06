@@ -1,6 +1,7 @@
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, error, fetch, inquirer, divider } = require("../utils");
+const { log, error, fetch, divider } = require("../utils");
+const { promptUserInput } = require("../lib/inquirer");
 const debug = require("debug");
 
 // CONSTANTS
@@ -73,7 +74,7 @@ const CONNECT = {
   newConnection: async () => {
     const topics = await getTopics();
     const questions = CONNECT.setQuestions(topics);
-    const answers = await CONNECT.promptUserInput(questions);
+    const answers = await promptUserInput(questions);
     const mergedAnswers = CONNECT.mergeAnswersWithTemplate(answers, topics);
 
     CONNECT.postNewConnectorRequest(mergedAnswers)
@@ -103,7 +104,7 @@ const CONNECT = {
         {
           type: "list",
           name: "sink",
-          message: "which data sink are you adding new connection?",
+          message: "Which data sink are you adding new connection?",
           choices: ["Postgres", "Elastic Search"]
         },
         {
@@ -114,7 +115,7 @@ const CONNECT = {
         {
           type: "list",
           name: "topic",
-          message: "which topic do you want to sink?",
+          message: "Which topic do you want to sink?",
           choices: topics
         },
         {
@@ -128,10 +129,6 @@ const CONNECT = {
         }
       ];
     }
-  },
-
-  promptUserInput: questions => {
-    return inquirer.prompt(questions);
   },
 
   mergeAnswersWithTemplate: (answers, topics) => {
