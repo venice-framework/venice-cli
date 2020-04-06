@@ -17,6 +17,12 @@ const util = {
     console.log(chalk.hex("#BC390C").dim(msg));
   },
 
+  divider: () => {
+    console.log(
+      chalk.hex("#3282B8").dim("---------------------------------") //
+    );
+  },
+
   parseAnswers: options => {
     let values = [];
     for (let [key1, value1] of Object.entries(options)) {

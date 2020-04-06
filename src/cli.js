@@ -1,4 +1,4 @@
-const getTopics = require("./topics");
+const { parseTopicCommand } = require("./topics");
 const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
 const { log, parseArgs } = require("../utils");
@@ -19,7 +19,7 @@ export function cli(rawArgs) {
   } else if (args.schemas || args.s) {
     schemaParse(args);
   } else if (args.topics || args.t) {
-    getTopics();
+    parseTopicCommand(args); // pass in true here so that it will print. False is default value so topics don't get printed for internal getTopic requests
   }
 
   if (args.down) {
