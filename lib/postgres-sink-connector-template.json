@@ -1,0 +1,16 @@
+{
+  "name": "CALCULATED BY INPUT",
+  "config": {
+    "connector.class": "CALCULATED BY INPUT",
+    "connection.url": "jdbc:postgresql://postgres:5432/buses",
+    "connection.user": "venice_user",
+    "connection.password": "venice",
+    "topics": "CALCULATED BY INPUT",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "insert.mode": "",
+    "tasks.max": "CALCULATED BY INPUT"
+  }
+}

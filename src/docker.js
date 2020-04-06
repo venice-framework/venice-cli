@@ -1,7 +1,7 @@
 const exec = require("child_process").exec;
 
 import { Docker } from "docker-cli-js";
-import { log, error } from "../util";
+import { log, error } from "../utils";
 const inquirer = require("../lib/inquirer");
 const single = inquirer.selectSingleService;
 const multiple = inquirer.selectMultipleServices;
@@ -42,11 +42,16 @@ const docker = {
     });
   },
 
-  // TODO: add an async await to make sure this actually runs & return error if there is a conflict (another container with same name, etc.)
+  // TODO: add an async await to make sure this actually runs
+  // return error if there is a conflict (another container with same name, etc.)
   up: () => {
-    exec("docker-compose up -d --build").on("close", () => {
-      log("Venice is now running.");
-    });
+    try {
+      exec("docker-compose up -d --build").on("close", () => {
+        log("Venice is now running.");
+      });
+    } catch (err) {
+      err;
+    }
   },
 
   // TODO: not formatting error correctly - refactor to use promises error handling
