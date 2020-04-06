@@ -2,11 +2,9 @@ const chalk = require("chalk");
 const fetch = require("node-fetch");
 const clear = require("clear");
 const parseArgs = require("minimist");
-const inquirer = require("inquirer");
 
 const util = {
   parseArgs,
-  inquirer,
   fetch,
   clear,
   log: msg => {
@@ -22,6 +20,15 @@ const util = {
       chalk.hex("#3282B8").dim("---------------------------------") //
     );
   },
+
+  // TODO add CLI error for invalid command.
+
+  // module.exports = (message, exit) => {
+  // console.error(message)
+  // exit && process.exit(1)
+  // }
+  //
+  // https://timber.io/blog/creating-a-real-world-cli-app-with-node/
 
   parseAnswers: options => {
     let values = [];

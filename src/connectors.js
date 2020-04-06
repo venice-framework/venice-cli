@@ -1,7 +1,15 @@
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, error, fetch, inquirer, divider } = require("../utils");
+const { log, error, fetch, divider } = require("../utils");
+const { promptUserInput } = require("../lib/inquirer");
 const debug = require("debug");
+
+const validConnectorsCommands = `
+  "venice connectors": prints all current connectors and their status
+  "venice connectors new": process to create a new connection
+
+  "venice -c" is an alias for "venice connectors" and will work with all of these commands
+`;
 
 // CONSTANTS
 const CONNECT_URL = "http://localhost:8083/connectors";
@@ -12,29 +20,35 @@ const CONNECT = {
   // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
   // TODO - Confirm we have kafka-connect in distributed mode
   // TODO - change connector so its not hard coded to buses. Maybe we just have venice database.
-  parseConnectorCommand: args => {
-    // TODO - make sure this switch statement works with all the aliases
-    switch (args.c) {
+  parseConnectorCommand: command => {
+    switch (command) {
       case "new":
         CONNECT.newConnection();
         break;
-      case true:
-        CONNECT.getConnectors();
+      case false:
+        CONNECT.printTopics();
         break;
 
       default:
         error(
-          "Please ensure you've entered a valid command for connectors. To see commands type `venice --help`"
+          `"${command}" is not a valid connector command. The list of valid commands are:
+
+          ${validConnectorsCommands}`
         );
         break;
     }
   },
 
-  getConnectors: (print = false) => {
-    fetch(CONNECT_URL)
-      .then(res => res.json())
+  printTopics: () => {
+    CONNECT.getConnectors()
       .then(CONNECT.getAllConnectorsStatus)
       .then(CONNECT.printConnectors)
+      .catch(err => error(err));
+  },
+
+  getConnectors: () => {
+    return fetch(CONNECT_URL)
+      .then(res => res.json())
       .catch(err => error(err));
   },
 
@@ -48,6 +62,11 @@ const CONNECT = {
   },
 
   printConnectors: connectors => {
+    if (connectors.length === 0) {
+      log("There are no connectors currently ");
+      return;
+    }
+
     log(`There are ${connectors.length} connectors:`);
     connectors.forEach(con => {
       if (con.state === "FAILED") {
@@ -73,8 +92,9 @@ const CONNECT = {
   newConnection: async () => {
     const topics = await getTopics();
     const questions = CONNECT.setQuestions(topics);
-    const answers = await CONNECT.promptUserInput(questions);
+    const answers = await promptUserInput(questions);
     const mergedAnswers = CONNECT.mergeAnswersWithTemplate(answers, topics);
+    const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
 
     CONNECT.postNewConnectorRequest(mergedAnswers)
       .then(resp => {
@@ -84,7 +104,7 @@ const CONNECT = {
           );
           error(resp.message);
         } else {
-          fs.writeFileSync(filepath, JSON.stringify(mergedAnswers));
+          fs.writeFileSync(newConnectorFilePath, JSON.stringify(mergedAnswers));
           log(
             `Successfully added ${resp.name} as connection and saved config at ./created_connectors/postgres/${resp.name}.json` // TODO - update if we get elastic search working
           );
@@ -103,7 +123,7 @@ const CONNECT = {
         {
           type: "list",
           name: "sink",
-          message: "which data sink are you adding new connection?",
+          message: "Which data sink are you adding new connection?",
           choices: ["Postgres", "Elastic Search"]
         },
         {
@@ -114,7 +134,7 @@ const CONNECT = {
         {
           type: "list",
           name: "topic",
-          message: "which topic do you want to sink?",
+          message: "Which topic do you want to sink?",
           choices: topics
         },
         {
@@ -130,15 +150,12 @@ const CONNECT = {
     }
   },
 
-  promptUserInput: questions => {
-    return inquirer.prompt(questions);
-  },
-
   mergeAnswersWithTemplate: (answers, topics) => {
     // TODO - make it an option to have multiple topics
+    // TODO - Upsert needs to work with PK
     // TODO - need to think about key deserialisation.
     // TODO - how do we get the database name - currently hardcoded to buses
-    // TODO - will this filepath from anywhere?
+    // TODO - will this filepath work from anywhere?
     let response;
 
     if (answers.sink === "Postgres") {
@@ -149,7 +166,6 @@ const CONNECT = {
   },
 
   postgresCompleteTemplate: (answers, topics) => {
-    const filepath = `./created_connectors/postgres-${answers.connector_name}.json`;
     let template = JSON.parse(
       fs.readFileSync("./lib/postgres-sink-connector-template.json")
     );
@@ -184,6 +200,8 @@ const CONNECT = {
       body: JSON.stringify(answers),
       headers: { "Content-Type": "application/json" }
     });
+
+    console.log(resp.json());
     return resp.json();
   }
 };
