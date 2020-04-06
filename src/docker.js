@@ -1,8 +1,5 @@
-const execPromise = require("child-process-promise").exec;
-const Spinner = require("clui").Spinner;
-
 import { Docker } from "docker-cli-js";
-import { log, error, exec } from "../utils";
+import { log, error, exec, execPromise, Spinner } from "../utils";
 const inquirer = require("../lib/inquirer");
 const single = inquirer.selectSingleService;
 const multiple = inquirer.selectMultipleServices;

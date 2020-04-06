@@ -4,13 +4,17 @@ const clear = require("clear");
 const parseArgs = require("minimist");
 const inquirer = require("inquirer");
 const exec = require("child_process").exec;
+const execPromise = require("child-process-promise").exec;
+const Spinner = require("clui").Spinner;
 
 const util = {
   exec,
+  execPromise,
   parseArgs,
   inquirer,
   fetch,
   clear,
+  Spinner,
   log: msg => {
     console.log(chalk.hex("#96D6FF").dim(msg));
   },
