@@ -1,6 +1,4 @@
-import { log, error, exec, execPromise, Spinner } from "../utils";
-import { Docker } from "docker-cli-js";
-const dockerInstance = new Docker();
+import { log, error, execPromise, spawnPromise, Spinner } from "../utils";
 
 // get the current networks
 const fetchNetworks = async () => {
@@ -23,70 +21,30 @@ const getNetworkName = async () => {
   return network;
 };
 
-// TODO = add a wait spinner while it connects
 const ksql = {
   startCLI: async () => {
     const network = await getNetworkName();
-    const status = new Spinner(log("Starting up the KSQL CLI. Please wait..."));
-    const statusText = "connecting...";
+    new Spinner(
+      log(
+        "Starting up the KSQL CLI.\nThis will load the CLI container and may" +
+          " take several minutes.\nPlease wait..."
+      )
+    );
 
-    let cmd = "docker-compose exec ksql-cli ksql http://ksql-server:8088";
-
-    let launchKsql = execPromise(cmd);
-    status.start();
-    status.message(statusText);
-    launchKsql
-      .then(() => {
-        status.stop();
-      })
-      .catch(result => {
-        error(`ERROR: ${result.stderr}`);
-      })
-      .finally(() => status.stop());
-
-    // launchKsql.catch(err => error(err));
-
-    // // full command - with 'docker' to start
-    // let cmd =
-    //   `docker run --rm --name ksql-cli -it --network=${network} ` +
-    //   "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
-
-    // // with 'docker' - without TTY
-    // let cmd =
-    //   `docker run --rm --name ksql-cli -i --network=${network} ` +
-    //   "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
-
-    // // without 'docker'
-    // let cmd =
-    //   `run --rm --name ksql-cli -it --network=${network} ` +
-    //   "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
-
-    // // without 'docker' or pseudo TTY (-i instead of -it)
-    // let cmd =
-    //   `run --rm --name ksql-cli -i --network=${network} ` +
-    //   "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
-    // // log(cmd);
-
-    // exec(cmd, (err, stdout, stderr) => {
-    //   error(err);
-    // });
-
-    // dockerInstance.command(cmd).catch(err => {
-    //   error(err);
-    // });
-
-    // // docker run --rm --name ksql-cli -it --network=venice-python_default confluentinc/cp-ksql-cli:5.4.1
-
-    // This version launches a "dumb terminal" not a "system terminal" - which doesn't seem to accept ksql commands
-    // without 'docker' or pseudo TTY (-i instead of -it)
-
-    // let cmd =
-    //   `run --rm --name ksql-cli -i --network=${network} ` +
-    //   "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
-    // dockerInstance.command(cmd).catch(err => {
-    //   error(err);
-    // });
+    const cmd =
+      `docker run --rm --name ksql-cli -it --network=${network} ` +
+      "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
+    const launchKsql = spawnPromise(cmd, {
+      stdio: "inherit",
+      shell: true
+    });
+    launchKsql.catch(result => {
+      error(`ERROR: ${result.stderr}`);
+    });
   }
 };
 
 module.exports = ksql;
+
+// lanchKsql borrows logic from this repo, specifically the `runDocker.js` file:
+// https://github.com/garris/BackstopJS/pull/925/commits/51a8872ef615363376b75da53426f8946adb29c7

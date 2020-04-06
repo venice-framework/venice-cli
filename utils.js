@@ -5,11 +5,13 @@ const parseArgs = require("minimist");
 const inquirer = require("inquirer");
 const exec = require("child_process").exec;
 const execPromise = require("child-process-promise").exec;
+const spawnPromise = require("child-process-promise").spawn;
 const Spinner = require("clui").Spinner;
 
 const util = {
   exec,
   execPromise,
+  spawnPromise,
   parseArgs,
   inquirer,
   fetch,
