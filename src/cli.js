@@ -19,7 +19,7 @@ export function cli(rawArgs) {
   } else if (args.schemas || args.s) {
     schemaParse(args);
   } else if (args.topics || args.t) {
-    parseTopicCommand(args); // pass in true here so that it will print. False is default value so topics don't get printed for internal getTopic requests
+    parseTopicCommand(args);
   }
 
   if (args.down) {

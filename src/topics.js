@@ -1,6 +1,10 @@
-const KSQL_API_URL = "http://localhost:8088/ksql";
+const zlib = require("zlib");
+const http = require("http");
 const { log, error, fetch, divider } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
+
+const KSQL_API_URL = "http://localhost:8088/ksql";
+const KSQL_QUERY_URL = "http://localhost:8088/query";
 
 const TOPICS = {
   parseTopicCommand: args => {
@@ -26,10 +30,38 @@ const TOPICS = {
       method: "POST",
       body: JSON.stringify(json),
 
-      headers: { "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8" }
+      headers: {
+        "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8",
+        Accept: "application/vnd.ksql.v1+json"
+      }
     });
-
     return resp.json();
+  },
+
+  // logChunks: async response => {
+  //   const stream = response.body;
+  //   const myREPL = child.spawn("node");
+  //   myREPL.stdout.pipe(process.stdout, { end: false });
+  //   myREPL.stdout.pipe(response.body.readable);
+  //   myREPL.on("exit", function(code) {
+  //     process.exit(code);
+  //   });
+  //   // process.stdin.resume();
+  //   // for await (const chunk of response.body) {
+  //   //   console.log(chunk);
+  //   // }
+  // },
+
+  ksqlQuery: async json => {
+    return await fetch(KSQL_QUERY_URL, {
+      method: "POST",
+      body: JSON.stringify(json),
+
+      headers: {
+        "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8",
+        "accept-encoding": "gzip,deflate"
+      }
+    });
   },
 
   getTopics: async (toPrint = false) => {
@@ -38,7 +70,7 @@ const TOPICS = {
       topics: {} // I'm not sure what this line does on the request
     };
 
-    const resp = await TOPICS.kqslPOST(json);
+    const resp = await TOPICS.kqslPOST(json, KSQL_API_URL);
     const topics = await TOPICS.parseTopicResponse(resp);
 
     if (!topics) {
@@ -51,12 +83,11 @@ const TOPICS = {
 
   printTopics: async () => {
     const topics = await TOPICS.getTopics();
-    console.log(topics);
     await TOPICS.printAllTopics(topics);
   },
 
   parseTopicResponse: resp => {
-    const defaultTopics = /(kafka-connect|default_ksql|ksql-connect)/;
+    const defaultTopics = /(connect-1|default_ksql|connect|_schemas)/;
     const topicList = resp[0].topics.filter(topic => {
       return !defaultTopics.test(topic.name);
     });
@@ -80,10 +111,37 @@ const TOPICS = {
   },
 
   showTopic: async () => {
+    // TODO - refactor so this isn't all in this method
     const topics = await TOPICS.getTopics();
     const questions = TOPICS.setQuestions(topics);
     const answers = await promptUserInput(questions);
-    console.log(answers);
+    const json = TOPICS.createFollowJSON(answers);
+
+    const options = {
+      host: "localhost",
+      port: "8088",
+      path: "/query",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8"
+      }
+    };
+
+    const req = http.request(options, res => {
+      res.setEncoding("utf8");
+      res.on("data", chunk => {
+        log(`BODY: ${chunk}`); // I think this was teh problem I was having - I wasn't using on data.
+      });
+      res.on("end", () => {
+        log("No more data in response.");
+      });
+    });
+
+    req.on("error", e => {
+      error(`problem with request: ${e.message}`);
+    });
+
+    req.write(JSON.stringify(json));
   },
 
   setQuestions: topics => {
@@ -95,19 +153,20 @@ const TOPICS = {
       return [
         {
           type: "list",
-          name: "sink",
+          name: "topic",
           message: "Which topic do you want to print",
           choices: topics
-        },
-        {
-          type: "list",
-          name: "topic",
-          message:
-            "Would you like to follow new entries or print from the beginning THEN follow new entries?",
-          choices: ["From beginning and follow", "Only follow"]
         }
       ];
     }
+  },
+
+  createFollowJSON: answers => {
+    // TODO - I MIGHT BE ABLE TO FIX THIS NOW SO THAT IT DOESN'T ALWAYS PRINT FROM THE BEGINING.
+    return {
+      ksql: `PRINT ${answers.topic} FROM BEGINNING;`,
+      streamsProperties: {}
+    };
   }
 };
 

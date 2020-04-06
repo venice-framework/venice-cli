@@ -31,6 +31,7 @@ const CONNECT = {
     }
   },
 
+  // TODO - refactor this so that get Connectors doesn't print. See TOPICS
   getConnectors: (print = false) => {
     fetch(CONNECT_URL)
       .then(res => res.json())
