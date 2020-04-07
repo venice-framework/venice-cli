@@ -2,11 +2,10 @@ const docker = require("./docker");
 const { parseConnectorCommand } = require("./connectors");
 const { parseTopicCommand } = require("./topics");
 const { parseSchemaCommand } = require("./schemas");
+const { error } = require("../utils");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
-
-const KSQL_API_URL = "http://localhost:8088/ksql";
-
+// TODO - Make a --help and have that displayed if somebody puts in an invalid command
 const checkForAlias = command => {
   const aliases = {
     "-c": "connectors",
@@ -74,6 +73,9 @@ export function cli(rawArgs) {
       break;
 
     default:
+      error(
+        "TODO - You've entered an invalid command. The list of valid commands are: "
+      );
       break;
   }
 }

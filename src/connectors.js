@@ -200,9 +200,7 @@ const CONNECT = {
   },
 
   postNewConnectorRequest: async answers => {
-    console.log(answers);
     const json = await JSON.stringify(answers);
-    console.log(json);
 
     const response = await fetch(CONNECT_URL, {
       method: "POST",
@@ -212,7 +210,6 @@ const CONNECT = {
         Accept: "application/json"
       }
     });
-    console.log(response);
 
     return response;
   },
