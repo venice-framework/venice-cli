@@ -1,17 +1,13 @@
-import { parse } from "querystring";
-
-const { parseTopicCommand } = require("./topics");
-const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
-const { log, parseArgs } = require("../utils"); // remove parseArgs?
+
 const { parseConnectorCommand } = require("./connectors");
+const { parseTopicCommand } = require("./topics");
+const { parseSchemaCommand } = require("./schemas");
+const { error } = require("../utils");
 const { startCLI } = require("./ksql");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
-
-const SCHEMA_URL = "http://schema-registry:8081/subjects";
-const KSQL_API_URL = "http://localhost:8088/ksql";
-
+// TODO - Make a --help and have that displayed if somebody puts in an invalid command
 const checkForAlias = command => {
   const aliases = {
     "-c": "connectors",
@@ -80,6 +76,9 @@ export function cli(rawArgs) {
       break;
 
     default:
+      error(
+        "TODO - You've entered an invalid command. The list of valid commands are: "
+      );
       break;
   }
 }

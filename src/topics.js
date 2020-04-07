@@ -1,7 +1,8 @@
-const zlib = require("zlib");
 const http = require("http");
 const { log, error, fetch, divider } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
+
+// TODOS - NEED TO UPDATE THESE URLS
 
 const KSQL_API_URL = "http://localhost:8088/ksql";
 const KSQL_QUERY_URL = "http://localhost:8088/query";
@@ -78,7 +79,18 @@ const TOPICS = {
 
   printTopics: async () => {
     const topics = await TOPICS.getTopics();
-    await TOPICS.printAllTopics(topics);
+
+    if (topics.length === 0) {
+      log("There are no topics currently ");
+      return;
+    }
+
+    log(`There are ${topics.length} topics:`);
+    divider();
+    topics.forEach(topic => {
+      log(`${topic.name} with ${topic.partitions} partitions`);
+    });
+    return topics;
   },
 
   parseTopicResponse: resp => {
@@ -92,19 +104,6 @@ const TOPICS = {
         name: topic.name,
         partitions: topic.replicaInfo.reduce((acc, cur) => acc + cur)
       };
-    });
-    return topics;
-  },
-
-  printAllTopics: topics => {
-    if (topics.length === 0) {
-      log("There are no topics currently ");
-      return;
-    }
-    log(`There are ${topics.length} topics:`);
-    divider();
-    topics.forEach(topic => {
-      log(`${topic.name} with ${topic.partitions} partitions`);
     });
     return topics;
   },
@@ -129,7 +128,15 @@ const TOPICS = {
     const req = http.request(options, res => {
       res.setEncoding("utf8");
       res.on("data", chunk => {
-        log(`BODY: ${chunk}`); // I think this was teh problem I was having - I wasn't using on data.
+        const entries = TOPICS.parseChunk(chunk);
+        if (entries) {
+          TOPICS.printTopicEntries(entries);
+        }
+
+        // if (chunk.length > 1) {
+        //   divider();
+        //   log(`${chunk}`);
+        // }
       });
       res.on("end", () => {
         log("No more data in response.");
@@ -141,6 +148,35 @@ const TOPICS = {
     });
 
     req.write(JSON.stringify(json));
+  },
+
+  parseChunk: chunk => {
+    const chunkedEntries = chunk.split(/\n/);
+    return chunkedEntries.map(entry => {
+      let result = {};
+      // The entry is a string like "timstamp, key, {value1, value2, value3}". Hence, the weird parsing below.
+      // Splitting on commas to get the timestamp and key
+      const parsedEntry = entry.split(/, /);
+      result.timestamp = parsedEntry[0];
+      result.key = parsedEntry[1];
+
+      // splitting at the start of the hash to get the values.
+      const getValues = entry.split("{");
+      result.values = `{${getValues[1]}`;
+
+      return result;
+    });
+  },
+
+  printTopicEntries: entries => {
+    entries.forEach(entry => {
+      if (entry.timestamp) {
+        log(`Timestamp: ${entry.timestamp}`);
+        log(`Key: ${entry.key}`);
+        log(`Value: ${entry.values}`);
+        divider();
+      }
+    });
   },
 
   setQuestions: topics => {

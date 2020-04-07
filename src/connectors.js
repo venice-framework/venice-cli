@@ -2,11 +2,11 @@ const { getTopics } = require("./topics");
 const fs = require("fs");
 const { log, error, fetch, divider } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
-const debug = require("debug");
 
 const validConnectorsCommands = `
-  "venice connectors": prints all current connectors and their status
-  "venice connectors new": process to create a new connection
+  "venice connectors": Print all current connectors and their status
+  "venice connectors new": Create a new connection
+  "venice connectors delete": Delete a connection
 
   "venice -c" is an alias for "venice connectors" and will work with all of these commands
 `;
@@ -24,6 +24,9 @@ const CONNECT = {
     switch (command) {
       case "new":
         CONNECT.newConnection();
+        break;
+      case "delete":
+        CONNECT.deleteConnection();
         break;
       case false:
         CONNECT.printTopics();
@@ -90,42 +93,40 @@ const CONNECT = {
   },
 
   newConnection: async () => {
+    // LIMITATION - UPSERT only works if the key is a string.
     const topics = await getTopics();
     const questions = CONNECT.setQuestions(topics);
     const answers = await promptUserInput(questions);
-    const mergedAnswers = CONNECT.mergeAnswersWithTemplate(answers, topics);
+    const mergedAnswers = await CONNECT.mergeAnswersWithTemplate(
+      answers,
+      topics
+    );
     const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
 
     CONNECT.postNewConnectorRequest(mergedAnswers)
       .then(resp => {
-        if (resp.error_code) {
-          error(
-            "Something went wrong with your connection. Kafka-Connect error message: "
-          );
-          error(resp.message);
-        } else {
+        if (resp.status === 201) {
           fs.writeFileSync(newConnectorFilePath, JSON.stringify(mergedAnswers));
           log(
-            `Successfully added ${resp.name} as connection and saved config at ./created_connectors/postgres/${resp.name}.json` // TODO - update if we get elastic search working
+            `Successfully added ${mergedAnswers.name} as connection and saved config at ./created_connectors/postgres/${mergedAnswers.name}.json`
+          );
+        } else {
+          throw new Error(
+            `Request to Kafka-Connect failed with ${resp.status} status. Please check the logs`
           );
         }
       })
-      .catch(err => log(err));
+      .catch(err => error(err));
   },
 
   setQuestions: topics => {
+    // TODO - Add question for what do you want the table to be called
     if (!topics) {
       throw new Error(
         "Unable to get topics, please make sure kafka brokers are running"
       );
     } else {
       return [
-        {
-          type: "list",
-          name: "sink",
-          message: "Which data sink are you adding new connection?",
-          choices: ["Postgres", "Elastic Search"]
-        },
         {
           type: "input",
           name: "connector_name",
@@ -150,23 +151,11 @@ const CONNECT = {
     }
   },
 
-  mergeAnswersWithTemplate: (answers, topics) => {
-    // TODO - make it an option to have multiple topics
-    // TODO - Upsert needs to work with PK
-    // TODO - need to think about key deserialisation.
+  mergeAnswersWithTemplate: async (answers, topics) => {
     // TODO - how do we get the database name - currently hardcoded to buses
-    // TODO - will this filepath work from anywhere?
-    let response;
+    // TODO - ROWKEY is harded coded as primary key for upsert.
 
-    if (answers.sink === "Postgres") {
-      response = CONNECT.postgresCompleteTemplate(answers, topics);
-    }
-
-    return response;
-  },
-
-  postgresCompleteTemplate: (answers, topics) => {
-    let template = JSON.parse(
+    let template = await JSON.parse(
       fs.readFileSync("./lib/postgres-sink-connector-template.json")
     );
 
@@ -182,11 +171,27 @@ const CONNECT = {
 
     if (/upsert/.test(answers.insert_mode)) {
       template.config["insert.mode"] = "upsert";
+      template.config["pk.mode"] = "record_key";
+      template.config["pk.fields"] = "ROWKEY";
     } else {
       template.config["insert.mode"] = "insert";
     }
 
     return template;
+  },
+
+  promptForKey: async () => {
+    const question = [
+      {
+        type: "input",
+        name: "key",
+        message:
+          "Upsert requires a name for the primary key in the DATABASE. Please provide a name for this column."
+      }
+    ];
+
+    const answers = await promptUserInput(question);
+    return answers;
   },
 
   calculateTasks: (selectedTopic, topics) => {
@@ -195,14 +200,56 @@ const CONNECT = {
   },
 
   postNewConnectorRequest: async answers => {
-    const resp = await fetch(CONNECT_URL, {
+    const json = await JSON.stringify(answers);
+
+    const response = await fetch(CONNECT_URL, {
       method: "POST",
       body: JSON.stringify(answers),
-      headers: { "Content-Type": "application/json" }
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
     });
 
-    console.log(resp.json());
-    return resp.json();
+    return response;
+  },
+
+  deleteConnection: () => {
+    CONNECT.getConnectors()
+      .then(CONNECT.setDeleteQuestions)
+      .then(promptUserInput)
+      .then(CONNECT.postDeleteConnectorRequest)
+      .then(resp => {
+        if (resp.status === 204) {
+          log("Connector deleted succesfully");
+        }
+      })
+      .catch(err => error(err));
+  },
+
+  setDeleteQuestions: connectors => {
+    if (connectors.length === 0) {
+      throw new Error(
+        "No connectors available. If all containers are running then this means there are no connectors."
+      );
+    }
+
+    return [
+      {
+        type: "list",
+        name: "connector",
+        message:
+          "Which connector woudl you like to delete? WARNING - this won't remove database tables",
+        choices: connectors
+      }
+    ];
+  },
+  postDeleteConnectorRequest: async answers => {
+    const path = `${CONNECT_URL}/${answers.connector}`;
+
+    return await fetch(path, {
+      method: "DELETE"
+    });
   }
 };
 
