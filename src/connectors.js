@@ -15,6 +15,24 @@ const validConnectorsCommands = `
 const CONNECT_URL = "http://localhost:8083/connectors";
 // const CONNECT_URL = "http://kafka-connect:8083/connectors";
 
+const POSTGRES_TEMPLATE = {
+  name: "PROVIDEDBY INPUT",
+  config: {
+    "connection.url": "jdbc:postgresql://postgres:5432/buses",
+    "connection.user": "venice_user",
+    "connection.password": "venice",
+    topics: "PROVIDEDBY INPUT",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schema.registry.url": "http://schema-registry:8081",
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "insert.mode": "PROVIDEDBY INPUT",
+    "tasks.max": "CALCULATED BY TOPIC PARTITION SIZED"
+  }
+};
+
 const CONNECT = {
   // DOCS -    // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
   // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
@@ -106,6 +124,10 @@ const CONNECT = {
     CONNECT.postNewConnectorRequest(mergedAnswers)
       .then(resp => {
         if (resp.status === 201) {
+          fs.mkdir("./created_connectors", { recursive: true }, err => {
+            if (err) throw err;
+          });
+
           fs.writeFileSync(newConnectorFilePath, JSON.stringify(mergedAnswers));
           log(
             `Successfully added ${mergedAnswers.name} as connection and saved config at ./created_connectors/postgres/${mergedAnswers.name}.json`
@@ -155,10 +177,7 @@ const CONNECT = {
     // TODO - how do we get the database name - currently hardcoded to buses
     // TODO - ROWKEY is harded coded as primary key for upsert.
 
-    let template = await JSON.parse(
-      fs.readFileSync("./lib/postgres-sink-connector-template.json")
-    );
-
+    let template = { ...POSTGRES_TEMPLATE };
     template.name = answers.connector_name;
     template.config["topics"] = answers.topic;
     template.config["connector.class"] =
