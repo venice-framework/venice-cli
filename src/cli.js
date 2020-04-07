@@ -1,8 +1,10 @@
 const docker = require("./docker");
+
 const { parseConnectorCommand } = require("./connectors");
 const { parseTopicCommand } = require("./topics");
 const { parseSchemaCommand } = require("./schemas");
 const { error } = require("../utils");
+const { startCLI } = require("./ksql");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
 // TODO - Make a --help and have that displayed if somebody puts in an invalid command
@@ -64,6 +66,7 @@ export function cli(rawArgs) {
       break;
 
     case "ksql":
+      startCLI();
       break;
 
     case "psql":

@@ -1,65 +1,88 @@
-const exec = require("child_process").exec;
-const execPromise = require("child-process-promise").exec;
-const Spinner = require("clui").Spinner;
-
-import { Docker } from "docker-cli-js";
-import { log, error } from "../utils";
-const inquirer = require("../lib/inquirer");
-const single = inquirer.selectSingleService;
-const multiple = inquirer.selectMultipleServices;
-
-const dockerInstance = new Docker();
-
-// TODO: `restart` and `log` (the functions that use docker-cli-js `dockerInstance`)
-// are duplicating the error
-// first uncaught - prints in white - then prints the caught error in color as expected
+import {
+  chalk,
+  error,
+  execPromise,
+  log,
+  spawnPromise,
+  Spinner
+} from "../utils";
+const multiple = require("../lib/inquirer").selectMultipleServices;
 
 const docker = {
   down: () => {
     const status = new Spinner(log("Venice is shutting down, please wait..."));
-    const launch = exec("docker-compose down");
+    const launch = execPromise("docker-compose down");
+    const statusText = chalk.hex("#96D6FF").dim("Docker containers closing...");
     status.start();
+    status.message(statusText);
 
-    launch.on("close", () => {
+    launch.then(() => {
       status.stop();
       log("Venice has shut down.");
+    });
+  },
+
+  log: async () => {
+    const services = await multiple("log");
+    spawnPromise(`docker-compose logs -f ${services}`, {
+      stdio: "inherit",
+      shell: true
+    }).catch(err => {
+      error(err);
     });
   },
 
   restart: async () => {
     const services = await multiple("restart");
 
-    dockerInstance
-      .command(`restart ${services}`)
+    const restart = execPromise(`docker restart ${services}`);
+    const status = new Spinner(
+      log("Venice is attempting to restart your containers. Please wait...")
+    );
+    const statusText = "Restarting...";
+
+    status.start();
+    status.message(statusText);
+
+    restart
       .then(() => {
+        status.stop();
         docker.status();
         log(`${services} restarted successfully`);
       })
       .catch(err => {
-        if (services !== "") {
+        status.stop();
+        if (services === "") {
+          error("No service was selected.");
+        } else {
           error(`${services} could not be restarted`);
+          error(err);
         }
-        error(err);
       });
   },
 
   status: () => {
     const status = new Spinner(log("Fetching Venice status, please wait..."));
-    let msg;
-    const launch = exec("docker ps", (err, stdout, stderr) => {
-      msg = stdout.trim();
-    });
+    const statusText = chalk.hex("#96D6FF").dim("loading...");
+
+    const launch = execPromise("docker ps");
+
     status.start();
-    launch.on("close", () => {
+    status.message(statusText);
+    launch.then(result => {
       status.stop();
-      log(msg);
+      log(result.stdout);
     });
   },
 
   up: () => {
     let launch = execPromise("docker-compose up -d --build");
     const status = new Spinner(log("Venice is starting, please wait..."));
+    const statusText = chalk
+      .hex("#96D6FF")
+      .dim("Docker containers spinning up...");
     status.start();
+    status.message(statusText);
 
     launch
       .then(() => {
@@ -70,14 +93,6 @@ const docker = {
         status.stop();
         error(err);
       });
-  },
-
-  log: async () => {
-    // determine which service they want to log - can only log 1 at a time
-    const service = await single("log");
-    dockerInstance.command(`logs -f ${service}`).catch(err => {
-      error(err);
-    });
   }
 };
 
