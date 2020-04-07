@@ -8,8 +8,6 @@ const { displayManual } = require("./manual");
 
 //  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
 
-// TODO - Make a --help and have that displayed if somebody puts in an invalid command
-
 // TODO: do we need psql and elastic search commands?
 // - if we don't get to implementing elasticsearch
 // we should remove it from the list of containers to log or restart in inquirer

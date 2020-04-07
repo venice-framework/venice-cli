@@ -1,3 +1,4 @@
+const clui = require("clui");
 const color = require("cli-color");
 const execPromise = require("child-process-promise").exec;
 const fetch = require("node-fetch");
@@ -17,11 +18,11 @@ const util = {
   inquirer,
   spawnPromise,
   Spinner,
-  log: msg => {
+  log: (msg) => {
     console.log(blue(msg));
   },
 
-  error: msg => {
+  error: (msg) => {
     console.log(orange(msg));
   },
 
