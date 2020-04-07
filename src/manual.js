@@ -6,12 +6,13 @@ const commands = [
   ["down", "", "close venice pipeline"],
   // ["elasticsearch", "-es", ""][("ksql", "-k", "launch ksql CLI")], // uncomment if we get this working - otherwise remove this
   ["logs", "-l", "view logs of venice components"],
-  // ["postgres", "-p", "add a postgres container to the pipeline"], // uncomment if we are able to add this functionality, otherwise remove
+  ["postgres", "-pg", "pull the venice-postgres-sink from GitHub"], // uncomment if we are able to add this functionality, otherwise remove
+  ["psql", "-p", "launch the postgreSQL CLI"],
   ["restart", "-r", "restart venice components"],
   ["schemas", "-s", "view current schemas"],
   ["status", "-st", "status of venice components"],
   ["topics", "-t", "view current topics"],
-  ["up", "", "launch venice pipeline"]
+  ["up", "", "launch venice pipeline"],
 ];
 
 const manual = {
@@ -29,7 +30,7 @@ const manual = {
 
     divider2();
 
-    commands.forEach(command => {
+    commands.forEach((command) => {
       new Line()
         .padding(2)
         .column(command[0], 15, [blue])
@@ -42,7 +43,7 @@ const manual = {
     log(
       "\nTo view this guide at any time, use 'venice man' or 'venice --help'.\n"
     );
-  }
+  },
 };
 
 module.exports = manual;

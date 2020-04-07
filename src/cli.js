@@ -13,24 +13,25 @@ const { displayManual } = require("./manual");
 // we should remove it from the list of containers to log or restart in inquirer
 // and from the list of commands in manual
 
-const checkForAlias = command => {
+const checkForAlias = (command) => {
   const aliases = {
     "-c": "connectors",
     "-es": "elasticsearch",
     "-k": "ksql",
     "-l": "logs",
-    "-p": "postgres",
+    "-pg": "postgres",
+    "-p": "psql",
     "-r": "restart",
     "-s": "schemas",
     "-st": "status",
     "-t": "topics",
-    "--help": "man"
+    "--help": "man",
   };
 
   return aliases[command] || command;
 };
 
-const argumentsIntoOptions = rawArgs => {
+const argumentsIntoOptions = (rawArgs) => {
   let service = rawArgs[2];
   const command = rawArgs[3] || false;
   service = checkForAlias(service);
