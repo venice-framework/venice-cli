@@ -24,6 +24,14 @@ const docker = {
     });
   },
 
+  log: async () => {
+    // determine which service they want to log - can only log 1 at a time
+    const service = await single("log");
+    dockerInstance.command(`logs -f ${service}`).catch(err => {
+      error(err);
+    });
+  },
+
   restart: async () => {
     const services = await multiple("restart");
 
@@ -73,14 +81,6 @@ const docker = {
         status.stop();
         error(err);
       });
-  },
-
-  log: async () => {
-    // determine which service they want to log - can only log 1 at a time
-    const service = await single("log");
-    dockerInstance.command(`logs -f ${service}`).catch(err => {
-      error(err);
-    });
   }
 };
 
