@@ -8,15 +8,17 @@ Issue the following commands to use the Venice framework:
 
 You'll obviously need to have the python-venice environment running
 
-- `venice --connectors` - get the connectors
-- `venice --topics` - get the topics
-- `venice --up` - launches the pipeline
-- `venice --down` - stops the pipeline
-- `venice --status` - displays the status of all the Venice services
-- `venice --log` - asks which venice service user wants to log (singular)
-- `venice --restart` - asks which venices services user wants to restart (multiple)
+- `venice connectors` - get the connectors
+- `venice topics` - get the topics
+- `venice up` - launches the pipeline
+- `venice down` - stops the pipeline
+- `venice status` - displays the status of all the Venice services
+- `venice log` - asks which venice service user wants to log (singular)
+- `venice restart` - asks which venices services user wants to restart (multiple)
 
 ---
+
+Co-authored-by: David Perich <davidnperich@gmail.com>
 
 ## Dev Notes
 
