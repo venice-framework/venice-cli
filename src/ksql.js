@@ -5,7 +5,7 @@ const fetchNetworks = async () => {
   return execPromise("docker network ls");
 };
 
-// get the network name thatex contains 'venice'
+// get the network name that contains 'venice'
 const parseNetwork = networksOutput => {
   return networksOutput
     .trim()

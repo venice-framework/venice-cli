@@ -1,18 +1,11 @@
-import {
-  chalk,
-  error,
-  execPromise,
-  log,
-  spawnPromise,
-  Spinner
-} from "../utils";
+import { blue, error, execPromise, log, spawnPromise, Spinner } from "../utils";
 const multiple = require("../lib/inquirer").selectMultipleServices;
 
 const docker = {
   down: () => {
     const status = new Spinner(log("Venice is shutting down, please wait..."));
     const launch = execPromise("docker-compose down");
-    const statusText = chalk.hex("#96D6FF").dim("Docker containers closing...");
+    const statusText = blue("Docker containers closing...");
     status.start();
     status.message(statusText);
 
@@ -63,7 +56,7 @@ const docker = {
 
   status: () => {
     const status = new Spinner(log("Fetching Venice status, please wait..."));
-    const statusText = chalk.hex("#96D6FF").dim("loading...");
+    const statusText = blue("loading...");
 
     const launch = execPromise("docker ps");
 
@@ -78,9 +71,7 @@ const docker = {
   up: () => {
     let launch = execPromise("docker-compose up -d --build");
     const status = new Spinner(log("Venice is starting, please wait..."));
-    const statusText = chalk
-      .hex("#96D6FF")
-      .dim("Docker containers spinning up...");
+    const statusText = blue("Docker containers spinning up...");
     status.start();
     status.message(statusText);
 

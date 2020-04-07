@@ -1,13 +1,18 @@
 const docker = require("./docker");
-
 const { parseConnectorCommand } = require("./connectors");
 const { parseTopicCommand } = require("./topics");
 const { parseSchemaCommand } = require("./schemas");
 const { error } = require("../utils");
 const { startCLI } = require("./ksql");
+const { displayManual } = require("./manual");
 
-//  URLS - eventually these should all be docker URLS or ENV variables
+//  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
+
 // TODO - Make a --help and have that displayed if somebody puts in an invalid command
+
+// TODO: do we need psql and elastic search commands?
+// - if we don't get to implementing elasticsearch, we should remove it from the list of containers to log or restart in inquirer
+
 const checkForAlias = command => {
   const aliases = {
     "-c": "connectors",
@@ -15,7 +20,8 @@ const checkForAlias = command => {
     "-t": "topics",
     "-r": "restart",
     "-st": "status",
-    "-es": "elastic-search"
+    "-es": "elastic-search",
+    "--help": "man"
   };
 
   return aliases[command] || command;
@@ -69,6 +75,10 @@ export function cli(rawArgs) {
       startCLI();
       break;
 
+    case "man":
+      displayManual();
+      break;
+
     case "psql":
       break;
 
@@ -77,8 +87,9 @@ export function cli(rawArgs) {
 
     default:
       error(
-        "TODO - You've entered an invalid command. The list of valid commands are: "
+        "You've entered an invalid command. The list of valid commands are: "
       );
+      displayManual();
       break;
   }
 }
