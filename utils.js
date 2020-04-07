@@ -16,6 +16,7 @@ const util = {
   fetch,
   clear,
   Spinner,
+  inquirer,
   log: msg => {
     console.log(chalk.hex("#96D6FF").dim(msg));
   },
