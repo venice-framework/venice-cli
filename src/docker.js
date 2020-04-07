@@ -1,15 +1,22 @@
-import { log, error, exec, execPromise, spawnPromise, Spinner } from "../utils";
+import {
+  chalk,
+  error,
+  execPromise,
+  log,
+  spawnPromise,
+  Spinner
+} from "../utils";
 const multiple = require("../lib/inquirer").selectMultipleServices;
 
 const docker = {
   down: () => {
     const status = new Spinner(log("Venice is shutting down, please wait..."));
-    const launch = exec("docker-compose down");
-    const statusText = "Docker containers closing...";
+    const launch = execPromise("docker-compose down");
+    const statusText = chalk.hex("#96D6FF").dim("Docker containers closing...");
     status.start();
     status.message(statusText);
 
-    launch.on("close", () => {
+    launch.then(() => {
       status.stop();
       log("Venice has shut down.");
     });
@@ -56,24 +63,24 @@ const docker = {
 
   status: () => {
     const status = new Spinner(log("Fetching Venice status, please wait..."));
-    const statusText = "Docker containers closing...";
+    const statusText = chalk.hex("#96D6FF").dim("loading...");
 
-    let msg;
-    const launch = exec("docker ps", (err, stdout, stderr) => {
-      msg = stdout.trim();
-    });
+    const launch = execPromise("docker ps");
+
     status.start();
     status.message(statusText);
-    launch.on("close", () => {
+    launch.then(result => {
       status.stop();
-      log(msg);
+      log(result.stdout);
     });
   },
 
   up: () => {
     let launch = execPromise("docker-compose up -d --build");
     const status = new Spinner(log("Venice is starting, please wait..."));
-    const statusText = "Docker containers spinning up...";
+    const statusText = chalk
+      .hex("#96D6FF")
+      .dim("Docker containers spinning up...");
     status.start();
     status.message(statusText);
 
