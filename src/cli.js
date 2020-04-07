@@ -11,16 +11,21 @@ const { displayManual } = require("./manual");
 // TODO - Make a --help and have that displayed if somebody puts in an invalid command
 
 // TODO: do we need psql and elastic search commands?
-// - if we don't get to implementing elasticsearch, we should remove it from the list of containers to log or restart in inquirer
+// - if we don't get to implementing elasticsearch
+// we should remove it from the list of containers to log or restart in inquirer
+// and from the list of commands in manual
 
 const checkForAlias = command => {
   const aliases = {
     "-c": "connectors",
-    "-s": "schemas",
-    "-t": "topics",
+    "-es": "elasticsearch",
+    "-k": "ksql",
+    "-l": "log",
+    "-p": "postgres",
     "-r": "restart",
+    "-s": "schemas",
     "-st": "status",
-    "-es": "elastic-search",
+    "-t": "topics",
     "--help": "man"
   };
 
@@ -43,46 +48,49 @@ export function cli(rawArgs) {
       parseConnectorCommand(command);
       break;
 
-    case "topics":
-      parseTopicCommand(command);
-      break;
-
-    case "schemas":
-      parseSchemaCommand(command);
-      break;
-
-    case "up":
-      docker.up();
-      break;
-
     case "down":
       docker.down();
       break;
 
-    case "status":
-      docker.status();
-      break;
-
-    case "restart":
-      docker.restart();
-      break;
-
-    case "log":
-      docker.log();
+    case "elasticsearch":
       break;
 
     case "ksql":
       startCLI();
       break;
 
+    case "log":
+      docker.log();
+      break;
+
     case "man":
       displayManual();
+      break;
+
+    case "postgres": // pull down the venice postgres sink from github
       break;
 
     case "psql":
       break;
 
-    case "elastic-search":
+    case "restart":
+      docker.restart();
+      break;
+
+    case "schemas":
+      parseSchemaCommand(command);
+      break;
+
+    case "status":
+      docker.status();
+      break;
+
+    case "topics":
+      parseTopicCommand(command);
+      break;
+
+    case "up":
+      docker.up();
       break;
 
     default:

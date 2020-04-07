@@ -17,6 +17,7 @@ const util = {
   blue,
   clear,
   clui,
+  color,
   exec,
   execPromise,
   fetch,
@@ -34,6 +35,10 @@ const util = {
 
   divider: () => {
     console.log(blue("---------------------------------"));
+  },
+
+  divider2: () => {
+    console.log(blue("--------------------------------------------------"));
   },
 
   parseAnswers: options => {
