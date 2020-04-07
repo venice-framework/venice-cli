@@ -64,7 +64,7 @@ const docker = {
     status.message(statusText);
     launch.then(result => {
       status.stop();
-      log(result.stdout);
+      log(result.stdout.trim());
     });
   },
 
