@@ -1,14 +1,10 @@
-import { parse } from "querystring";
-
-const { parseTopicCommand } = require("./topics");
-const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
-const { log, parseArgs } = require("../utils"); // remove parseARgs?
 const { parseConnectorCommand } = require("./connectors");
+const { parseTopicCommand } = require("./topics");
+const { parseSchemaCommand } = require("./schemas");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
 
-const SCHEMA_URL = "http://schema-registry:8081/subjects";
 const KSQL_API_URL = "http://localhost:8088/ksql";
 
 const checkForAlias = command => {

@@ -1,18 +1,17 @@
 {
-  "name": "CALCULATED BY INPUT",
+  "name": "PROVIDEDBY INPUT",
   "config": {
-    "connector.class": "CALCULATED BY INPUT",
     "connection.url": "jdbc:postgresql://postgres:5432/buses",
     "connection.user": "venice_user",
     "connection.password": "venice",
-    "topics": "CALCULATED BY INPUT",
+    "topics": "PROVIDEDBY INPUT",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://schema-registry:8081",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "key.converter.schema.registry.url": "http://schema-registry:8081",
     "auto.create": "true",
     "auto.evolve": "true",
-    "insert.mode": "",
-    "tasks.max": "CALCULATED BY INPUT"
+    "insert.mode": "PROVIDEDBY INPUT",
+    "tasks.max": "CALCULATED BY TOPIC PARTITION SIZED"
   }
 }
