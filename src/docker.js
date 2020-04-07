@@ -15,9 +15,9 @@ const docker = {
     });
   },
 
-  log: async () => {
+  logs: async () => {
     const services = await multiple("log");
-    spawnPromise(`docker-compose logs -f ${services}`, {
+    spawnPromise(`docker-compose logs -f ${services} | less`, {
       stdio: "inherit",
       shell: true
     }).catch(err => {
