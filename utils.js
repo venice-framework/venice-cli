@@ -1,5 +1,7 @@
-const chalk = require("chalk");
+// const chalk = require("chalk");
 const clear = require("clear");
+const clui = require("clui");
+const color = require("cli-color");
 const exec = require("child_process").exec;
 const execPromise = require("child-process-promise").exec;
 const fetch = require("node-fetch");
@@ -8,9 +10,14 @@ const parseArgs = require("minimist");
 const spawnPromise = require("child-process-promise").spawn;
 const Spinner = require("clui").Spinner;
 
+const blue = color.xterm(68);
+const orange = color.xterm(209);
+
 const util = {
-  chalk,
+  blue,
   clear,
+  clui,
+  color,
   exec,
   execPromise,
   fetch,
@@ -19,17 +26,19 @@ const util = {
   spawnPromise,
   Spinner,
   log: msg => {
-    console.log(chalk.hex("#96D6FF").dim(msg));
+    console.log(blue(msg));
   },
 
   error: msg => {
-    console.log(chalk.hex("#BC390C").dim(msg));
+    console.log(orange(msg));
   },
 
   divider: () => {
-    console.log(
-      chalk.hex("#3282B8").dim("---------------------------------") //
-    );
+    console.log(blue("---------------------------------"));
+  },
+
+  divider2: () => {
+    console.log(blue("--------------------------------------------------"));
   },
 
   parseAnswers: options => {
