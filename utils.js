@@ -1,27 +1,36 @@
+const color = require("cli-color");
 const execPromise = require("child-process-promise").exec;
 const fetch = require("node-fetch");
 const inquirer = require("inquirer");
 const spawnPromise = require("child-process-promise").spawn;
 const Spinner = require("clui").Spinner;
 
+const blue = color.xterm(68);
+const orange = color.xterm(209);
+
 const util = {
+  blue,
+  clui,
+  color,
   execPromise,
   fetch,
   inquirer,
   spawnPromise,
   Spinner,
-  log: (msg) => {
-    console.log(chalk.hex("#96D6FF").dim(msg));
+  log: msg => {
+    console.log(blue(msg));
   },
 
-  error: (msg) => {
-    console.log(chalk.hex("#BC390C").dim(msg));
+  error: msg => {
+    console.log(orange(msg));
   },
 
   divider: () => {
-    console.log(
-      chalk.hex("#3282B8").dim("---------------------------------") //
-    );
+    console.log(blue("---------------------------------"));
+  },
+
+  divider2: () => {
+    console.log(blue("--------------------------------------------------"));
   },
 
   parseAnswers: (options) => {
