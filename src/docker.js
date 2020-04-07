@@ -1,7 +1,6 @@
 import { Docker } from "docker-cli-js";
-import { log, error, exec, execPromise, Spinner } from "../utils";
+import { log, error, exec, execPromise, spawnPromise, Spinner } from "../utils";
 const inquirer = require("../lib/inquirer");
-const single = inquirer.selectSingleService;
 const multiple = inquirer.selectMultipleServices;
 
 const dockerInstance = new Docker();
@@ -25,9 +24,11 @@ const docker = {
   },
 
   log: async () => {
-    // determine which service they want to log - can only log 1 at a time
-    const service = await single("log");
-    dockerInstance.command(`logs -f ${service}`).catch(err => {
+    const services = await multiple("log");
+    spawnPromise(`docker-compose logs -f ${services}`, {
+      stdio: "inherit",
+      shell: true
+    }).catch(err => {
       error(err);
     });
   },
