@@ -1,13 +1,6 @@
-import { Docker } from "docker-cli-js";
 import { log, error, exec, execPromise, spawnPromise, Spinner } from "../utils";
 const inquirer = require("../lib/inquirer");
 const multiple = inquirer.selectMultipleServices;
-
-const dockerInstance = new Docker();
-
-// TODO: `restart` and `log` (the functions that use docker-cli-js `dockerInstance`)
-// are duplicating the error
-// first uncaught - prints in white - then prints the caught error in color as expected
 
 const docker = {
   down: () => {
@@ -36,17 +29,29 @@ const docker = {
   restart: async () => {
     const services = await multiple("restart");
 
-    dockerInstance
-      .command(`restart ${services}`)
+    const restart = execPromise(`docker restart ${services}`);
+    const status = new Spinner(
+      log("Venice is attempting to restart your containers. Please wait...")
+    );
+    const statusText = "Restarting...";
+
+    status.start();
+    status.message(statusText);
+
+    restart
       .then(() => {
+        status.stop();
         docker.status();
         log(`${services} restarted successfully`);
       })
       .catch(err => {
-        if (services !== "") {
+        status.stop();
+        if (services === "") {
+          error("No service was selected.");
+        } else {
           error(`${services} could not be restarted`);
+          error(err);
         }
-        error(err);
       });
   },
 
