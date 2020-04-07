@@ -65,8 +65,8 @@ export function cli(rawArgs) {
       docker.restart();
       break;
 
-    case "log":
-      docker.log();
+    case "logs":
+      docker.logs();
       break;
 
     case "ksql":
