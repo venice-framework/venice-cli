@@ -14,7 +14,9 @@ const docker = {
   down: () => {
     const status = new Spinner(log("Venice is shutting down, please wait..."));
     const launch = exec("docker-compose down");
+    const statusText = "Docker containers closing...";
     status.start();
+    status.message(statusText);
 
     launch.on("close", () => {
       status.stop();
@@ -41,11 +43,14 @@ const docker = {
 
   status: () => {
     const status = new Spinner(log("Fetching Venice status, please wait..."));
+    const statusText = "Docker containers closing...";
+
     let msg;
     const launch = exec("docker ps", (err, stdout, stderr) => {
       msg = stdout.trim();
     });
     status.start();
+    status.message(statusText);
     launch.on("close", () => {
       status.stop();
       log(msg);
@@ -55,7 +60,9 @@ const docker = {
   up: () => {
     let launch = execPromise("docker-compose up -d --build");
     const status = new Spinner(log("Venice is starting, please wait..."));
+    const statusText = "Docker containers spinning up...";
     status.start();
+    status.message(statusText);
 
     launch
       .then(() => {
