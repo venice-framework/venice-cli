@@ -3,8 +3,9 @@ import { parse } from "querystring";
 const { parseTopicCommand } = require("./topics");
 const getSchemas = require("./schemas"); // should this be schemaParse?
 const docker = require("./docker");
-const { log, parseArgs } = require("../utils"); // remove parseARgs?
+const { log, parseArgs } = require("../utils"); // remove parseArgs?
 const { parseConnectorCommand } = require("./connectors");
+const { startCLI } = require("./ksql");
 
 //  URLS - eventually these should all be docker URLS or ENV variables
 
@@ -69,6 +70,7 @@ export function cli(rawArgs) {
       break;
 
     case "ksql":
+      startCLI();
       break;
 
     case "psql":

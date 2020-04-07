@@ -1,12 +1,23 @@
 const chalk = require("chalk");
-const fetch = require("node-fetch");
 const clear = require("clear");
+const exec = require("child_process").exec;
+const execPromise = require("child-process-promise").exec;
+const fetch = require("node-fetch");
+const inquirer = require("inquirer");
 const parseArgs = require("minimist");
+const spawnPromise = require("child-process-promise").spawn;
+const Spinner = require("clui").Spinner;
 
 const util = {
-  parseArgs,
-  fetch,
+  chalk,
   clear,
+  exec,
+  execPromise,
+  fetch,
+  parseArgs,
+  inquirer,
+  spawnPromise,
+  Spinner,
   log: msg => {
     console.log(chalk.hex("#96D6FF").dim(msg));
   },
