@@ -20,7 +20,7 @@ const checkForAlias = command => {
     "-c": "connectors",
     "-es": "elasticsearch",
     "-k": "ksql",
-    "-l": "log",
+    "-l": "logs",
     "-p": "postgres",
     "-r": "restart",
     "-s": "schemas",
@@ -59,8 +59,8 @@ export function cli(rawArgs) {
       startCLI();
       break;
 
-    case "log":
-      docker.log();
+    case "logs":
+      docker.logs();
       break;
 
     case "man":
