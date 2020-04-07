@@ -1,6 +1,5 @@
 import { log, error, exec, execPromise, spawnPromise, Spinner } from "../utils";
-const inquirer = require("../lib/inquirer");
-const multiple = inquirer.selectMultipleServices;
+const multiple = require("../lib/inquirer").selectMultipleServices;
 
 const docker = {
   down: () => {
