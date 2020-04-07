@@ -13,7 +13,6 @@ const util = {
   execPromise,
   spawnPromise,
   parseArgs,
-  inquirer,
   fetch,
   clear,
   Spinner,
@@ -30,6 +29,15 @@ const util = {
       chalk.hex("#3282B8").dim("---------------------------------") //
     );
   },
+
+  // TODO add CLI error for invalid command.
+
+  // module.exports = (message, exit) => {
+  // console.error(message)
+  // exit && process.exit(1)
+  // }
+  //
+  // https://timber.io/blog/creating-a-real-world-cli-app-with-node/
 
   parseAnswers: options => {
     let values = [];
