@@ -34,7 +34,6 @@ const SCHEMAS = {
 
   printSchemas: async () => {
     const schemas = await SCHEMAS.getSchemas();
-    console.log(schemas);
 
     if (schemas.length === 0) {
       log("There are no schemas currently ");
