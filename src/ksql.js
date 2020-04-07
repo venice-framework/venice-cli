@@ -5,7 +5,7 @@ const fetchNetworks = async () => {
   return execPromise("docker network ls");
 };
 
-// get the network name thta contains 'venice'
+// get the network name thatex contains 'venice'
 const parseNetwork = networksOutput => {
   return networksOutput
     .trim()
@@ -26,7 +26,7 @@ const ksql = {
     const network = await getNetworkName();
     new Spinner(
       log(
-        "Starting up the KSQL CLI.\nThis will load the CLI container and may" +
+        "Launching the KSQL CLI.\nThis will load the CLI container and may" +
           " take several minutes.\nPlease wait..."
       )
     );
