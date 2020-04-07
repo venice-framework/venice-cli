@@ -7,7 +7,8 @@ const commands = [
   // ["elasticsearch", "-es", ""][("ksql", "-k", "launch ksql CLI")], // uncomment if we get this working - otherwise remove this
   ["logs", "-l", "view logs of venice components"],
   // ["postgres", "-p", "add a postgres container to the pipeline"], // uncomment if we are able to add this functionality, otherwise remove
-  ["schemas", "-s", "view current schema"],
+  ["restart", "-r", "restart venice components"],
+  ["schemas", "-s", "view current schemas"],
   ["status", "-st", "status of venice components"],
   ["topics", "-t", "view current topics"],
   ["up", "", "launch venice pipeline"]
