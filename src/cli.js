@@ -5,17 +5,18 @@ const { parseSchemaCommand } = require("./schemas");
 const { error } = require("../utils");
 const { startCLI } = require("./ksql");
 const { displayManual } = require("./manual");
+const { psqlCLI } = require("./psql");
 
 //  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
 
 // TODO - Make a --help and have that displayed if somebody puts in an invalid command
 
-// TODO: do we need psql and elastic search commands?
+// TODO: do we need elastic search command?
 // - if we don't get to implementing elasticsearch
 // we should remove it from the list of containers to log or restart in inquirer
 // and from the list of commands in manual
 
-const checkForAlias = command => {
+const checkForAlias = (command) => {
   const aliases = {
     "-c": "connectors",
     "-es": "elasticsearch",
@@ -26,13 +27,13 @@ const checkForAlias = command => {
     "-s": "schemas",
     "-st": "status",
     "-t": "topics",
-    "--help": "man"
+    "--help": "man",
   };
 
   return aliases[command] || command;
 };
 
-const argumentsIntoOptions = rawArgs => {
+const argumentsIntoOptions = (rawArgs) => {
   let service = rawArgs[2];
   const command = rawArgs[3] || false;
   service = checkForAlias(service);
@@ -71,6 +72,7 @@ export function cli(rawArgs) {
       break;
 
     case "psql":
+      psqlCLI();
       break;
 
     case "restart":

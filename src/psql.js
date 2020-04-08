@@ -1,0 +1,46 @@
+import { log, error, execPromise, spawnPromise, Spinner } from "../utils";
+const queries = require("../lib/inquirer");
+const getUsernameDBname = queries.getUsernameDBname;
+
+const psql = {
+  psqlCLI: async () => {
+    const answers = await getUsernameDBname();
+    new Spinner(log("Launching the Postgres CLI. Please wait..."));
+
+    const cmd =
+      `docker exec -it postgres psql --username=${answers.username} ` +
+      `--dbname=${answers.dbname}`;
+    const launchPsql = spawnPromise(cmd, {
+      stdio: "inherit",
+      shell: true,
+    });
+    launchPsql.catch((result) => {
+      error(`ERROR: ${result.stderr}`);
+    });
+  },
+};
+
+// const ksql = {
+//   startCLI: async () => {
+//     const network = await getNetworkName();
+//     new Spinner(
+//       log(
+//         "Launching the KSQL CLI.\nThis will load the CLI container and may" +
+//           " take several minutes.\nPlease wait..."
+//       )
+//     );
+
+//     const cmd =
+//       `docker run --rm --name ksql-cli -it --network=${network} ` +
+//       "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
+//     const launchKsql = spawnPromise(cmd, {
+//       stdio: "inherit",
+//       shell: true
+//     });
+//     launchKsql.catch(result => {
+//       error(`ERROR: ${result.stderr}`);
+//     });
+//   }
+// };
+
+module.exports = psql;
