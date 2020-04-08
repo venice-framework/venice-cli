@@ -6,7 +6,7 @@ const commands = [
 
   ["up", "", "launch venice pipeline"],
 
-  ["down", "", "close venice pipeline"],
+  ["down", "", "shut down venice pipeline"],
   ["status", "-st", "status of venice components"],
   // ["elasticsearch", "-es", ""][("ksql", "-k", "launch ksql CLI")], // uncomment if we get this working - otherwise remove this
   ["logs", "-l", "view logs of venice components"],
