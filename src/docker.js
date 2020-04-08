@@ -19,8 +19,8 @@ const docker = {
     const services = await multiple("log");
     spawnPromise(`docker-compose logs -f ${services} | less`, {
       stdio: "inherit",
-      shell: true
-    }).catch(err => {
+      shell: true,
+    }).catch((err) => {
       error(err);
     });
   },
@@ -32,7 +32,7 @@ const docker = {
     const status = new Spinner(
       log("Venice is attempting to restart your containers. Please wait...")
     );
-    const statusText = "Restarting...";
+    const statusText = blue("Restarting...");
 
     status.start();
     status.message(statusText);
@@ -43,7 +43,7 @@ const docker = {
         docker.status();
         log(`${services} restarted successfully`);
       })
-      .catch(err => {
+      .catch((err) => {
         status.stop();
         if (services === "") {
           error("No service was selected.");
@@ -62,7 +62,7 @@ const docker = {
 
     status.start();
     status.message(statusText);
-    launch.then(result => {
+    launch.then((result) => {
       status.stop();
       log(result.stdout.trim());
     });
@@ -80,11 +80,11 @@ const docker = {
         status.stop();
         log("Venice is now running.");
       })
-      .catch(err => {
+      .catch((err) => {
         status.stop();
         error(err);
       });
-  }
+  },
 };
 
 module.exports = docker;
