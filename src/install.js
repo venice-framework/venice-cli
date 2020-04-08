@@ -20,16 +20,19 @@ const install = {
   install: async () => {
     const answer = await selectRepo();
     const repo = answer.repo.split(" - ")[0];
-    let options = {
+    const options = {
       directoryName: repoURLs[repo][0],
       repoURL: repoURLs[repo][1],
     };
-    log(`${options.directoryName}, ${options.repoURL}`);
+    // log(`${options.directoryName}, ${options.repoURL}`);
 
-    // parse answer to construct command
-    confirm("download and install", repo); // confirm before installing
-    // if no quit
-    // if yes, pass in command
+    let confirmation = await confirm("download and install", repo); // confirm before installing
+    if (!confirmation) {
+      return;
+    } else {
+      const command = `git clone ${options.repoURL} ${options.directoryName}`;
+      log(command);
+    }
   },
 };
 
