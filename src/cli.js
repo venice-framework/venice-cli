@@ -5,6 +5,7 @@ const { parseSchemaCommand } = require("./schemas");
 const { error } = require("../utils");
 const { startCLI } = require("./ksql");
 const { displayManual } = require("./manual");
+const { install } = require("./install");
 
 //  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
 
@@ -15,24 +16,24 @@ const { displayManual } = require("./manual");
 // we should remove it from the list of containers to log or restart in inquirer
 // and from the list of commands in manual
 
-const checkForAlias = command => {
+const checkForAlias = (command) => {
   const aliases = {
     "-c": "connectors",
     "-es": "elasticsearch",
     "-k": "ksql",
     "-l": "logs",
-    "-p": "postgres",
+    "-i": "install",
     "-r": "restart",
     "-s": "schemas",
     "-st": "status",
     "-t": "topics",
-    "--help": "man"
+    "--help": "man",
   };
 
   return aliases[command] || command;
 };
 
-const argumentsIntoOptions = rawArgs => {
+const argumentsIntoOptions = (rawArgs) => {
   let service = rawArgs[2];
   const command = rawArgs[3] || false;
   service = checkForAlias(service);
@@ -67,7 +68,8 @@ export function cli(rawArgs) {
       displayManual();
       break;
 
-    case "postgres": // pull down the venice postgres sink from github
+    case "install":
+      install();
       break;
 
     case "psql":
