@@ -2,9 +2,12 @@ const { log } = require("../utils");
 const { selectRepo, confirm } = require("../lib/inquirer");
 
 const repoURLs = {
-  venice: ["venice", "git@github.com:venice-framework/venice.git"],
+  venice: [
+    "venice-postgres-sink",
+    "git@github.com:venice-framework/venice.git",
+  ],
   "python-producer": [
-    "python-producer-test",
+    "python-producer",
     "git@github.com/venice-framework/python-producer-test",
   ],
   "python-consumer": [
@@ -15,11 +18,16 @@ const repoURLs = {
 
 const install = {
   install: async () => {
-    const answers = await selectRepo();
-    log(answers.repo);
+    const answer = await selectRepo();
+    const repo = answer.repo.split(" - ")[0];
+    let options = {
+      directoryName: repoURLs[repo][0],
+      repoURL: repoURLs[repo][1],
+    };
+    log(`${options.directoryName}, ${options.repoURL}`);
 
     // parse answer to construct command
-    confirm("download and install", "this repo"); // confirm before installing
+    confirm("download and install", repo); // confirm before installing
     // if no quit
     // if yes, pass in command
   },
