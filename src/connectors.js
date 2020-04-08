@@ -189,7 +189,7 @@ const CONNECT = {
       "io.confluent.connect.jdbc.JdbcSinkConnector";
     template.config[
       "connection.url"
-    ] = `jdbc:postgresql://postgres:5432/${answers.dbName}`;
+    ] = `jdbc:postgresql://postgres:5432/${answers.dbname}`;
     template.config["tasks.max"] = CONNECT.calculateTasks(
       answers.topic,
       topics
@@ -204,20 +204,6 @@ const CONNECT = {
     }
 
     return template;
-  },
-
-  promptForKey: async () => {
-    const question = [
-      {
-        type: "input",
-        name: "key",
-        message:
-          "Upsert requires a name for the primary key in the DATABASE. Please provide a name for this column.",
-      },
-    ];
-
-    const answers = await promptUserInput(question);
-    return answers;
   },
 
   calculateTasks: (selectedTopic, topics) => {
