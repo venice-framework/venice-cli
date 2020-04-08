@@ -5,6 +5,7 @@ const { parseSchemaCommand } = require("./schemas");
 const { error } = require("../utils");
 const { startCLI } = require("./ksql");
 const { displayManual } = require("./manual");
+const { install } = require("./install");
 const { psqlCLI } = require("./psql");
 
 //  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
@@ -20,6 +21,7 @@ const checkForAlias = command => {
     "-es": "elasticsearch",
     "-k": "ksql",
     "-l": "logs",
+    "-i": "install",
     "-pg": "postgres",
     "-p": "psql",
     "-r": "restart",
@@ -67,7 +69,8 @@ export function cli(rawArgs) {
       displayManual();
       break;
 
-    case "postgres": // pull down the venice postgres sink from github
+    case "install":
+      install();
       break;
 
     case "psql":
