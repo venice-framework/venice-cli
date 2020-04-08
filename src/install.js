@@ -1,4 +1,4 @@
-const { log } = require("../utils");
+const { blue, error, execPromise, log, Spinner } = require("../utils");
 const { selectRepo, confirm } = require("../lib/inquirer");
 
 const repoURLs = {
@@ -7,12 +7,12 @@ const repoURLs = {
     "git@github.com:venice-framework/venice.git",
   ],
   "python-producer": [
-    "python-producer",
-    "git@github.com/venice-framework/python-producer-test",
+    "bus-producer-test",
+    "git@github.com:venice-framework/python-producer-test.git",
   ],
   "python-consumer": [
     "python-consumer",
-    "git@github.com/venice-framework/python-consumer",
+    "git@github.com:venice-framework/python-consumer.git",
   ],
 };
 
@@ -24,14 +24,30 @@ const install = {
       directoryName: repoURLs[repo][0],
       repoURL: repoURLs[repo][1],
     };
-    // log(`${options.directoryName}, ${options.repoURL}`);
 
-    let confirmation = await confirm("download and install", repo); // confirm before installing
-    if (!confirmation) {
+    let confirmation = await confirm("download and install", repo);
+    if (!confirmation.affirm) {
       return;
     } else {
-      const command = `git clone ${options.repoURL} ${options.directoryName}`;
-      log(command);
+      const cmd = `git clone ${options.repoURL} ${options.directoryName}`;
+      const status = new Spinner(
+        blue(`Venice is downloading ${repo}. Please wait...`)
+      );
+
+      const download = execPromise(cmd);
+      status.start();
+      download
+        .then(() => {
+          log(`\n\nSUCCESS: venice component ${repo} was installed!`);
+          log(
+            `enter 'cd ${options.directoryName}' if you need to navigate into` +
+              " that directory."
+          );
+        })
+        .catch((err) => error(err))
+        .finally(() => {
+          status.stop();
+        });
     }
   },
 };
