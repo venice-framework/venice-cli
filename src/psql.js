@@ -12,35 +12,12 @@ const psql = {
       `--dbname=${answers.dbname}`;
     const launchPsql = spawnPromise(cmd, {
       stdio: "inherit",
-      shell: true,
+      shell: true
     });
-    launchPsql.catch((result) => {
+    launchPsql.catch(result => {
       error(`ERROR: ${result.stderr}`);
     });
-  },
+  }
 };
-
-// const ksql = {
-//   startCLI: async () => {
-//     const network = await getNetworkName();
-//     new Spinner(
-//       log(
-//         "Launching the KSQL CLI.\nThis will load the CLI container and may" +
-//           " take several minutes.\nPlease wait..."
-//       )
-//     );
-
-//     const cmd =
-//       `docker run --rm --name ksql-cli -it --network=${network} ` +
-//       "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
-//     const launchKsql = spawnPromise(cmd, {
-//       stdio: "inherit",
-//       shell: true
-//     });
-//     launchKsql.catch(result => {
-//       error(`ERROR: ${result.stderr}`);
-//     });
-//   }
-// };
 
 module.exports = psql;

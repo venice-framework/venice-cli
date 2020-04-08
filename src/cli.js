@@ -22,7 +22,6 @@ const checkForAlias = command => {
     "-k": "ksql",
     "-l": "logs",
     "-i": "install",
-    "-pg": "postgres",
     "-p": "psql",
     "-r": "restart",
     "-s": "schemas",

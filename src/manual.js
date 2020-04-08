@@ -2,29 +2,47 @@ const { blue, clui, divider2, log } = require("../utils");
 const Line = clui.Line;
 
 const commands = [
-  ["connectors", "-c", "view current connectors"],
-  ["down", "", "close venice pipeline"],
-  // ["elasticsearch", "-es", ""][("ksql", "-k", "launch ksql CLI")], // uncomment if we get this working - otherwise remove this
+  ["down", "", "shut down the venice pipeline"],
+  // ["elasticsearch", "-es", ""] // uncomment if we get this working - otherwise remove this
+  ["install", "-i", "download and install a venice component from GitHub"],
+  ["ksql", "-k", "launch the ksqlDB CLI"],
   ["logs", "-l", "view logs of venice components"],
-  ["postgres", "-pg", "pull the venice-postgres-sink from GitHub"], // uncomment if we are able to add this functionality, otherwise remove
   ["psql", "-p", "launch the postgreSQL CLI"],
   ["restart", "-r", "restart venice components"],
-  ["schemas", "-s", "view current schemas"],
-  ["status", "-st", "status of venice components"],
-  ["topics", "-t", "view current topics"],
-  ["up", "", "launch venice pipeline"],
+  ["schemas", "-s", "view schemas saved in the Schema Registry"],
+  ["status", "-st", "view the status of venice components"],
+  ["up", "", "launch the venice pipeline"],
+];
+
+const connectorCommands = [
+  ["connectors", "-c", "view existing connectors and their status"],
+  [
+    "connectors new",
+    "-c new",
+    "create a new connection to an existing data sink",
+  ],
+  ["connectors delete", "-c delete", "delete an existing connection"],
+];
+
+const topicCommands = [
+  ["topics", "-t", "view a list of the current topics"],
+  [
+    "topics show",
+    "-t show",
+    "stream events from an existing topic to terminal",
+  ],
 ];
 
 const manual = {
   displayManual: () => {
     log("\nUsage:  venice COMMAND");
-    log("\nSimple development commands for the Venice pipeline\n");
+    log("\nBasic development commands for the Venice pipeline\n");
 
     let headers = new Line()
       .padding(2)
-      .column("Command", 15, [blue])
-      .column("Alias", 10, [blue])
-      .column("Function", 30, [blue])
+      .column("Command", 20, [blue])
+      .column("Alias", 12, [blue])
+      .column("Function", 55, [blue])
       .fill()
       .output();
 
@@ -33,9 +51,36 @@ const manual = {
     commands.forEach((command) => {
       new Line()
         .padding(2)
-        .column(command[0], 15, [blue])
-        .column(command[1], 10, [blue])
-        .column(command[2], 30, [blue])
+        .column(command[0], 20, [blue])
+        .column(command[1], 12, [blue])
+        .column(command[2], 55, [blue])
+        .fill()
+        .output();
+    });
+
+    divider2();
+    log("Connect Commands");
+    divider2();
+
+    connectorCommands.forEach((command) => {
+      new Line()
+        .padding(2)
+        .column(command[0], 20, [blue])
+        .column(command[1], 12, [blue])
+        .column(command[2], 55, [blue])
+        .fill()
+        .output();
+    });
+
+    divider2();
+    log("Topic Commands");
+    divider2();
+    topicCommands.forEach((command) => {
+      new Line()
+        .padding(2)
+        .column(command[0], 20, [blue])
+        .column(command[1], 13, [blue])
+        .column(command[2], 50, [blue])
         .fill()
         .output();
     });
