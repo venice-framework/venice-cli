@@ -18,7 +18,7 @@ const CONNECT_URL = "http://localhost:8083/connectors";
 const POSTGRES_TEMPLATE = {
   name: "PROVIDEDBY INPUT",
   config: {
-    "connection.url": "jdbc:postgresql://postgres:5432/buses",
+    "connection.url": "PROVIDEDBY INPUT",
     "connection.user": "venice_user",
     "connection.password": "venice",
     topics: "PROVIDEDBY INPUT",
@@ -37,7 +37,6 @@ const CONNECT = {
   // DOCS -    // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
   // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
   // TODO - Confirm we have kafka-connect in distributed mode
-  // TODO - change connector so its not hard coded to buses. Maybe we just have venice database.
   parseConnectorCommand: command => {
     switch (command) {
       case "new":
@@ -150,6 +149,13 @@ const CONNECT = {
     } else {
       return [
         {
+          name: "dbname",
+          type: "input",
+          message:
+            "Enter the name of your postgres database:\n" +
+            "If you are using the Venice default, input 'venice'"
+        },
+        {
           type: "input",
           name: "connector_name",
           message: "What would you like to name the new sink connection?"
@@ -174,7 +180,6 @@ const CONNECT = {
   },
 
   mergeAnswersWithTemplate: async (answers, topics) => {
-    // TODO - how do we get the database name - currently hardcoded to buses
     // TODO - ROWKEY is harded coded as primary key for upsert.
 
     let template = { ...POSTGRES_TEMPLATE };
@@ -182,7 +187,9 @@ const CONNECT = {
     template.config["topics"] = answers.topic;
     template.config["connector.class"] =
       "io.confluent.connect.jdbc.JdbcSinkConnector";
-    template.config["connection.url"] = "jdbc:postgresql://postgres:5432/buses";
+    template.config[
+      "connection.url"
+    ] = `jdbc:postgresql://postgres:5432/${answers.dbName}`;
     template.config["tasks.max"] = CONNECT.calculateTasks(
       answers.topic,
       topics
