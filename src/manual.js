@@ -29,7 +29,7 @@ const topicCommands = [
   [
     "topics show",
     "-t show",
-    "stream events from an existing topic to terminal",
+    "view the event stream from an existing topic in the terminal",
   ],
 ];
 
