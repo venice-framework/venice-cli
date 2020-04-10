@@ -10,11 +10,6 @@ const { psqlCLI } = require("./psql");
 
 //  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
 
-// TODO: do we need psql and elastic search commands?
-// - if we don't get to implementing elasticsearch
-// we should remove it from the list of containers to log or restart in inquirer
-// and from the list of commands in manual
-
 const checkForAlias = command => {
   const aliases = {
     "-c": "connectors",

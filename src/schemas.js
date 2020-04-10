@@ -9,7 +9,6 @@ const validSchemaCommands = `
 `;
 
 const SCHEMAS = {
-  // TODO - GET the actual SCHEMA for each schema
   parseSchemaCommand: command => {
     switch (command) {
       case false:

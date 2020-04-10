@@ -16,7 +16,6 @@ const validTopicCommands = `
 
 const TOPICS = {
   parseTopicCommand: command => {
-    // TODO - make sure this switch statement works with all the aliases
     switch (command) {
       case "show":
         TOPICS.showTopic();
@@ -109,7 +108,6 @@ const TOPICS = {
   },
 
   showTopic: async () => {
-    // TODO - refactor so this isn't all in this method
     const topics = await TOPICS.getTopics();
     const questions = TOPICS.setQuestions(topics);
     const answers = await promptUserInput(questions);
@@ -197,7 +195,6 @@ const TOPICS = {
   },
 
   createFollowJSON: answers => {
-    // TODO - I MIGHT BE ABLE TO FIX THIS NOW SO THAT IT DOESN'T ALWAYS PRINT FROM THE BEGINING.
     return {
       ksql: `PRINT ${answers.topic} FROM BEGINNING;`,
       streamsProperties: {}
@@ -205,5 +202,4 @@ const TOPICS = {
   }
 };
 
-// This removes topics that are returned by ksql that don't belong to the user.
 module.exports = TOPICS;
