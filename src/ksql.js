@@ -5,17 +5,17 @@ const fetchNetworks = async () => {
   return execPromise("docker network ls");
 };
 
-// get the network name that contains 'venice'
-const parseNetwork = networksOutput => {
+// get the network name that contains 'venice' at the end
+const parseNetwork = (networksOutput) => {
   return networksOutput
     .trim()
     .split(" ")
-    .find(el => el.includes("venice"));
+    .find((el) => el.includes("_venice"));
 };
 
 // bundles two above functions to actually return network name
 const getNetworkName = async () => {
-  let network = await fetchNetworks().then(result => {
+  let network = await fetchNetworks().then((result) => {
     return parseNetwork(result.stdout);
   });
   return network;
@@ -36,12 +36,12 @@ const ksql = {
       "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
     const launchKsql = spawnPromise(cmd, {
       stdio: "inherit",
-      shell: true
+      shell: true,
     });
-    launchKsql.catch(result => {
+    launchKsql.catch((result) => {
       error(`ERROR: ${result.stderr}`);
     });
-  }
+  },
 };
 
 module.exports = ksql;
