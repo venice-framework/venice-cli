@@ -79,7 +79,7 @@ Issue the following commands to use the Venice framework
 | Command     | Alias   | Function                                                     |
 | :---------- | :------ | :----------------------------------------------------------- |
 | topics      | -t      | view a list of the current topics                            |
-| topics show | -t show | view the event stream from an existing topic in the terminal |
+| topics show | -t show | view the event stream from an existing topic |
 
 ##### Notes
 
