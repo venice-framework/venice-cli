@@ -87,6 +87,4 @@ Issue the following commands to use the Venice framework
 
 ---
 
-[View the QuickStart guide]()
-
-<!-- *link to it here* -->
+[View the QuickStart guide](https://github.com/venice-framework/venice/blob/master/README.md)
