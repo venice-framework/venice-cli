@@ -63,7 +63,7 @@ const CONNECT = {
         error(err);
         divider();
         error(
-          "Please make sure the Kafka Connecto container is available. This error happens most often if you've just launched the pipeline and the container isn't ready. "
+          "Please make sure the Kafka Connect container is available. This error happens most often if you've just launched the pipeline and the container isn't ready. "
         );
       });
   },
