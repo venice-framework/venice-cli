@@ -25,19 +25,17 @@ const POSTGRES_TEMPLATE = {
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://schema-registry:8081",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-    "key.converter.schema.registry.url": "http://schema-registry:8081",
     "auto.create": "true",
     "auto.evolve": "true",
     "insert.mode": "PROVIDED BY INPUT",
-    "tasks.max": "CALCULATED BY TOPIC PARTITION SIZED",
-  },
+    "tasks.max": "CALCULATED BY TOPIC PARTITION SIZED"
+  }
 };
 
 const CONNECT = {
-  // DOCS -    // error parsing  - https://docs.confluent.io/current/connect/references/restapi.html
   // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
   // TODO - Confirm we have kafka-connect in distributed mode
-  parseConnectorCommand: (command) => {
+  parseConnectorCommand: command => {
     switch (command) {
       case "new":
         CONNECT.newConnection();
@@ -63,32 +61,32 @@ const CONNECT = {
     CONNECT.getConnectors()
       .then(CONNECT.getAllConnectorsStatus)
       .then(CONNECT.printConnectors)
-      .catch((err) => error(err));
+      .catch(err => error(err));
   },
 
   getConnectors: () => {
     return fetch(CONNECT_URL)
-      .then((res) => res.json())
-      .catch((err) => error(err));
+      .then(res => res.json())
+      .catch(err => error(err));
   },
 
-  getAllConnectorsStatus: (connectors) => {
+  getAllConnectorsStatus: connectors => {
     return Promise.all(
-      connectors.map(async (name) => {
+      connectors.map(async name => {
         let status = await fetch(`${CONNECT_URL}/${name}/status`);
         return status.json();
       })
     );
   },
 
-  printConnectors: (connectors) => {
+  printConnectors: connectors => {
     if (connectors.length === 0) {
       log("There are no connectors currently ");
       return;
     }
 
     log(`There are ${connectors.length} connectors:`);
-    connectors.forEach((con) => {
+    connectors.forEach(con => {
       if (con.state === "FAILED") {
         error(
           `${con.name} is ${con.connector.state} with ${con.tasks.length} tasks`
@@ -98,7 +96,7 @@ const CONNECT = {
           `${con.name} is ${con.connector.state} with ${con.tasks.length} tasks`
         );
       }
-      con.tasks.forEach((task) => {
+      con.tasks.forEach(task => {
         if (task.state === "FAILED") {
           error(`Task ${task.id} is ${task.state}`);
         } else {
@@ -121,9 +119,9 @@ const CONNECT = {
     const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
 
     CONNECT.postNewConnectorRequest(mergedAnswers)
-      .then((resp) => {
+      .then(resp => {
         if (resp.status === 201) {
-          fs.mkdir("./created_connectors", { recursive: true }, (err) => {
+          fs.mkdir("./created_connectors", { recursive: true }, err => {
             if (err) throw err;
           });
 
@@ -137,10 +135,10 @@ const CONNECT = {
           );
         }
       })
-      .catch((err) => error(err));
+      .catch(err => error(err));
   },
 
-  setQuestions: (topics) => {
+  setQuestions: topics => {
     // TODO - Add question for what do you want the table to be called
     if (!topics) {
       throw new Error(
@@ -153,18 +151,18 @@ const CONNECT = {
           type: "input",
           message:
             "Enter the name of your postgres database:\n" +
-            "If you are using the Venice default, input 'venice'",
+            "If you are using the Venice default, input 'venice'"
         },
         {
           type: "input",
           name: "connector_name",
-          message: "What would you like to name the new sink connection?",
+          message: "What would you like to name the new sink connection?"
         },
         {
           type: "list",
           name: "topic",
           message: "Which topic do you want to sink?",
-          choices: topics,
+          choices: topics
         },
         {
           type: "list",
@@ -172,9 +170,9 @@ const CONNECT = {
           message: "Do you want insert or upsert as insert mode?",
           choices: [
             "insert: Create new rows - if there is a primary key clash there will be a postgres error",
-            "upsert: Insert or update rows - if primary key exists, row will be updated. If not then a new row is created",
-          ],
-        },
+            "upsert: Insert or update rows - if primary key exists, row will be updated. If not then a new row is created"
+          ]
+        }
       ];
     }
   },
@@ -207,11 +205,11 @@ const CONNECT = {
   },
 
   calculateTasks: (selectedTopic, topics) => {
-    const info = topics.find((topic) => topic.name == selectedTopic);
+    const info = topics.find(topic => topic.name == selectedTopic);
     return String(info.partitions);
   },
 
-  postNewConnectorRequest: async (answers) => {
+  postNewConnectorRequest: async answers => {
     const json = await JSON.stringify(answers);
 
     const response = await fetch(CONNECT_URL, {
@@ -219,8 +217,8 @@ const CONNECT = {
       body: JSON.stringify(answers),
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+        Accept: "application/json"
+      }
     });
 
     return response;
@@ -231,15 +229,15 @@ const CONNECT = {
       .then(CONNECT.setDeleteQuestions)
       .then(promptUserInput)
       .then(CONNECT.postDeleteConnectorRequest)
-      .then((resp) => {
+      .then(resp => {
         if (resp.status === 204) {
           log("Connector deleted succesfully");
         }
       })
-      .catch((err) => error(err));
+      .catch(err => error(err));
   },
 
-  setDeleteQuestions: (connectors) => {
+  setDeleteQuestions: connectors => {
     if (connectors.length === 0) {
       throw new Error(
         "No connectors available. If all containers are running then this means there are no connectors."
@@ -252,17 +250,17 @@ const CONNECT = {
         name: "connector",
         message:
           "Which connector woudl you like to delete? WARNING - this won't remove database tables",
-        choices: connectors,
-      },
+        choices: connectors
+      }
     ];
   },
-  postDeleteConnectorRequest: async (answers) => {
+  postDeleteConnectorRequest: async answers => {
     const path = `${CONNECT_URL}/${answers.connector}`;
 
     return await fetch(path, {
-      method: "DELETE",
+      method: "DELETE"
     });
-  },
+  }
 };
 
 module.exports = CONNECT;
