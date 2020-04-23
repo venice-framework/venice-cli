@@ -2,8 +2,6 @@ const http = require("http");
 const { log, error, fetch, divider } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
 
-// TODOS - NEED TO UPDATE THESE URLS
-
 const KSQL_API_URL = "http://localhost:8088/ksql";
 const KSQL_QUERY_URL = "http://localhost:8088/query";
 
@@ -35,16 +33,20 @@ const TOPICS = {
   },
 
   kqslPOST: async json => {
-    const resp = await fetch(KSQL_API_URL, {
-      method: "POST",
-      body: JSON.stringify(json),
+    try {
+      const resp = await fetch(KSQL_API_URL, {
+        method: "POST",
+        body: JSON.stringify(json),
 
-      headers: {
-        "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8",
-        Accept: "application/vnd.ksql.v1+json"
-      }
-    });
-    return resp.json();
+        headers: {
+          "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8",
+          Accept: "application/vnd.ksql.v1+json"
+        }
+      });
+      return resp.json();
+    } catch (err) {
+      error(err);
+    }
   },
 
   ksqlQuery: async json => {
@@ -60,36 +62,42 @@ const TOPICS = {
   },
 
   getTopics: async (toPrint = false) => {
-    const json = {
-      ksql: "SHOW TOPICS;",
-      topics: {} // I'm not sure what this line does on the request
-    };
+    try {
+      const json = {
+        ksql: "SHOW TOPICS;",
+        topics: {} // I'm not sure what this line does on the request
+      };
 
-    const resp = await TOPICS.kqslPOST(json, KSQL_API_URL);
-    const topics = await TOPICS.parseTopicResponse(resp);
+      const resp = await TOPICS.kqslPOST(json, KSQL_API_URL);
+      const topics = await TOPICS.parseTopicResponse(resp);
 
-    if (!topics) {
-      throw new Error(
-        "Unable to get topics, please make sure kafka brokers are running"
-      );
+      return topics;
+    } catch (err) {
+      error(err);
     }
-    return topics;
   },
 
   printTopics: async () => {
-    const topics = await TOPICS.getTopics();
+    try {
+      const topics = await TOPICS.getTopics();
 
-    if (topics.length === 0) {
-      log("There are no topics currently ");
-      return;
+      if (topics.length === 0) {
+        log("There are no topics currently ");
+        return;
+      }
+
+      log(`There are ${topics.length} topics:`);
+      divider();
+      topics.forEach(topic => {
+        log(`${topic.name} with ${topic.partitions} partitions`);
+      });
+      return topics;
+    } catch (err) {
+      divider();
+      error(
+        "Please make sure ksqlDB container is available. This error occurs most often if you've just launched the pipeline and the containers aren't ready."
+      );
     }
-
-    log(`There are ${topics.length} topics:`);
-    divider();
-    topics.forEach(topic => {
-      log(`${topic.name} with ${topic.partitions} partitions`);
-    });
-    return topics;
   },
 
   parseTopicResponse: resp => {
@@ -108,44 +116,46 @@ const TOPICS = {
   },
 
   showTopic: async () => {
-    const topics = await TOPICS.getTopics();
-    const questions = TOPICS.setQuestions(topics);
-    const answers = await promptUserInput(questions);
-    const json = TOPICS.createFollowJSON(answers);
+    try {
+      const topics = await TOPICS.getTopics();
+      const questions = TOPICS.setQuestions(topics);
+      const answers = await promptUserInput(questions);
+      const json = TOPICS.createFollowJSON(answers);
 
-    const options = {
-      host: "localhost",
-      port: "8088",
-      path: "/query",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8"
-      }
-    };
-
-    const req = http.request(options, res => {
-      res.setEncoding("utf8");
-      res.on("data", chunk => {
-        const entries = TOPICS.parseChunk(chunk);
-        if (entries) {
-          TOPICS.printTopicEntries(entries);
+      const options = {
+        host: "localhost",
+        port: "8088",
+        path: "/query",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/vnd.ksql.v1+json; charset=utf-8"
         }
+      };
 
-        // if (chunk.length > 1) {
-        //   divider();
-        //   log(`${chunk}`);
-        // }
+      const req = http.request(options, res => {
+        res.setEncoding("utf8");
+        res.on("data", chunk => {
+          const entries = TOPICS.parseChunk(chunk);
+          if (entries) {
+            TOPICS.printTopicEntries(entries);
+          }
+        });
+        res.on("end", () => {
+          log("No more data in response.");
+        });
       });
-      res.on("end", () => {
-        log("No more data in response.");
+
+      req.on("error", e => {
+        error(`problem with request: ${e.message}`);
       });
-    });
 
-    req.on("error", e => {
-      error(`problem with request: ${e.message}`);
-    });
-
-    req.write(JSON.stringify(json));
+      req.write(JSON.stringify(json));
+    } catch (err) {
+      divider();
+      error(
+        "Please make sure ksqlDB container is available. This error occurs most often if you've just launched the pipeline and the containers aren't ready."
+      );
+    }
   },
 
   parseChunk: chunk => {

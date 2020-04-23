@@ -33,8 +33,6 @@ const POSTGRES_TEMPLATE = {
 };
 
 const CONNECT = {
-  // DOCS for woerk config - https://docs.confluent.io/current/connect/references/allconfigs.html
-  // TODO - Confirm we have kafka-connect in distributed mode
   parseConnectorCommand: command => {
     switch (command) {
       case "new":
@@ -44,7 +42,7 @@ const CONNECT = {
         CONNECT.deleteConnection();
         break;
       case false:
-        CONNECT.printTopics();
+        CONNECT.showConnectors();
         break;
 
       default:
@@ -57,11 +55,17 @@ const CONNECT = {
     }
   },
 
-  printTopics: () => {
+  showConnectors: () => {
     CONNECT.getConnectors()
       .then(CONNECT.getAllConnectorsStatus)
       .then(CONNECT.printConnectors)
-      .catch(err => error(err));
+      .catch(err => {
+        error(err);
+        divider();
+        error(
+          "Please make sure the Kafka Connecto container is available. This error happens most often if you've just launched the pipeline and the container isn't ready. "
+        );
+      });
   },
 
   getConnectors: () => {
@@ -109,17 +113,16 @@ const CONNECT = {
 
   newConnection: async () => {
     // LIMITATION - UPSERT only works if the key is a string.
-    const topics = await getTopics();
-    const questions = CONNECT.setQuestions(topics);
-    const answers = await promptUserInput(questions);
-    const mergedAnswers = await CONNECT.mergeAnswersWithTemplate(
-      answers,
-      topics
-    );
-    const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
+    try {
+      const questions = CONNECT.setQuestions(topics);
+      const answers = await promptUserInput(questions);
+      const mergedAnswers = await CONNECT.mergeAnswersWithTemplate(
+        answers,
+        topics
+      );
+      const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
 
-    CONNECT.postNewConnectorRequest(mergedAnswers)
-      .then(resp => {
+      CONNECT.postNewConnectorRequest(mergedAnswers).then(resp => {
         if (resp.status === 201) {
           fs.mkdir("./created_connectors", { recursive: true }, err => {
             if (err) throw err;
@@ -134,12 +137,17 @@ const CONNECT = {
             `Request to Kafka-Connect failed with ${resp.status} status. Please check the logs`
           );
         }
-      })
-      .catch(err => error(err));
+      });
+    } catch (err) {
+      error(err);
+      divider();
+      error(
+        "Please make sure the Kafka Connector Container and KSQL container are available. This error happens most often if you've just launched the pipeline and the container isn't ready."
+      );
+    }
   },
 
   setQuestions: topics => {
-    // TODO - Add question for what do you want the table to be called
     if (!topics) {
       throw new Error(
         "Unable to get topics, please make sure kafka brokers are running"
@@ -178,7 +186,7 @@ const CONNECT = {
   },
 
   mergeAnswersWithTemplate: async (answers, topics) => {
-    // TODO - ROWKEY is harded coded as primary key for upsert.
+    // ROWKEY is harded coded as primary key for upsert. Typically ksql creators a column called ROWKEY as the primary key.
 
     let template = { ...POSTGRES_TEMPLATE };
     template.name = answers.connector_name;
@@ -214,7 +222,7 @@ const CONNECT = {
 
     const response = await fetch(CONNECT_URL, {
       method: "POST",
-      body: JSON.stringify(answers),
+      body: json,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json"

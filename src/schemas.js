@@ -28,28 +28,29 @@ const SCHEMAS = {
   getSchemas: async () => {
     return await fetch(SCHEMA_URL)
       .then(res => res.json())
-      .catch(err => log(err));
+      .catch(err => error(err));
   },
 
   printSchemas: async () => {
-    const schemas = await SCHEMAS.getSchemas();
+    try {
+      const schemas = await SCHEMAS.getSchemas();
 
-    if (schemas.length === 0) {
-      log("There are no schemas currently ");
-      return;
+      if (schemas.length === 0) {
+        log("There are no schemas currently ");
+        return;
+      }
+
+      log(`There are ${schemas.length} schemas:`);
+      divider();
+      schemas.forEach(log);
+    } catch (err) {
+      error(err);
+      divider();
+      error(
+        "Please make sure the Schema Registry is available. This error can occur if you've just launched the pipeline and the containers aren't ready to recieve this request."
+      );
     }
-
-    log(`There are ${schemas.length} schemas:`);
-    divider();
-    schemas.forEach(log);
   }
-};
-
-// I haven't tested this as the schema-registry isn't available on local host
-const getSchemas = () => {
-  return fetch(SCHEMA_URL)
-    .then(res => res.json())
-    .catch(err => log(err));
 };
 
 module.exports = SCHEMAS;
