@@ -2,6 +2,7 @@ const { getTopics } = require("./topics");
 const fs = require("fs");
 const { log, error, fetch, divider, config } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
+const CONNECT_URL = `${config.CONNECT_URL}/connectors`;
 
 const validConnectorsCommands = `
   "venice connectors": Print all current connectors and their status
@@ -52,7 +53,6 @@ const CONNECT = {
   },
 
   showConnectors: () => {
-    console.log(config);
     CONNECT.getConnectors()
       .then(CONNECT.getAllConnectorsStatus)
       .then(CONNECT.printConnectors)
@@ -66,7 +66,7 @@ const CONNECT = {
   },
 
   getConnectors: () => {
-    return fetch(config.CONNECT_URL)
+    return fetch(CONNECT_URL)
       .then(res => res.json())
       .catch(err => error(err));
   },
@@ -74,7 +74,7 @@ const CONNECT = {
   getAllConnectorsStatus: connectors => {
     return Promise.all(
       connectors.map(async name => {
-        let status = await fetch(`${config.CONNECT_URL}/${name}/status`);
+        let status = await fetch(`${CONNECT_URL}/${name}/status`);
         return status.json();
       })
     );
@@ -209,7 +209,7 @@ const CONNECT = {
   postNewConnectorRequest: async answers => {
     const json = await JSON.stringify(answers);
 
-    const response = await fetch(config.CONNECT_URL, {
+    const response = await fetch(CONNECT_URL, {
       method: "POST",
       body: json,
       headers: {
@@ -252,7 +252,7 @@ const CONNECT = {
     ];
   },
   postDeleteConnectorRequest: async answers => {
-    const path = `${config.CONNECT_URL}/${answers.connector}`;
+    const path = `${CONNECT_URL}/${answers.connector}`;
 
     return await fetch(path, {
       method: "DELETE"

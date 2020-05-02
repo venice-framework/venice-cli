@@ -1,9 +1,9 @@
 const http = require("http");
-const { log, error, fetch, divider } = require("../utils");
+const { log, error, fetch, divider, config } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
 
-const KSQL_API_URL = "http://localhost:8088/ksql";
-const KSQL_QUERY_URL = "http://localhost:8088/query";
+const KSQL_API_URL = `${config.KSQL_SERVER_URL}/ksql`;
+const KSQL_QUERY_URL = `${config.KSQL_SERVER_URL}/query`;
 
 const validTopicCommands = `
   "venice topics": prints all the current topics

@@ -1,15 +1,12 @@
-import { log, error, execPromise, spawnPromise, Spinner } from "../utils";
-const queries = require("../lib/inquirer");
-const getUsernameDBname = queries.getUsernameDBname;
+import { log, error, spawnPromise, Spinner, config } from "../utils";
 
 const psql = {
   psqlCLI: async () => {
-    const answers = await getUsernameDBname();
     new Spinner(log("Launching the Postgres CLI. Please wait..."));
 
     const cmd =
-      `docker exec -it postgres psql --username=${answers.username} ` +
-      `--dbname=${answers.dbname}`;
+      `docker exec -it postgres psql --username=${config.POSTGRES_USER} ` +
+      `--dbname=${config.POSTGRES_DB}`;
     const launchPsql = spawnPromise(cmd, {
       stdio: "inherit",
       shell: true

@@ -1,4 +1,11 @@
-import { log, error, execPromise, spawnPromise, Spinner } from "../utils";
+import {
+  log,
+  error,
+  execPromise,
+  spawnPromise,
+  Spinner,
+  config
+} from "../utils";
 
 // get the current networks
 const fetchNetworks = async () => {
@@ -6,16 +13,16 @@ const fetchNetworks = async () => {
 };
 
 // get the network name that contains 'venice' at the end
-const parseNetwork = (networksOutput) => {
+const parseNetwork = networksOutput => {
   return networksOutput
     .trim()
     .split(" ")
-    .find((el) => el.includes("_venice"));
+    .find(el => el.includes("_venice"));
 };
 
 // bundles two above functions to actually return network name
 const getNetworkName = async () => {
-  let network = await fetchNetworks().then((result) => {
+  let network = await fetchNetworks().then(result => {
     return parseNetwork(result.stdout);
   });
   return network;
@@ -33,15 +40,15 @@ const ksql = {
 
     const cmd =
       `docker run --rm --name ksql-cli -it --network=${network} ` +
-      "confluentinc/cp-ksql-cli:5.4.1 http://ksql-server:8088";
+      `confluentinc/cp-ksql-cli:5.4.1 ${config.KSQL_SERVER_URL}`;
     const launchKsql = spawnPromise(cmd, {
       stdio: "inherit",
-      shell: true,
+      shell: true
     });
-    launchKsql.catch((result) => {
+    launchKsql.catch(result => {
       error(`ERROR: ${result.stderr}`);
     });
-  },
+  }
 };
 
 module.exports = ksql;

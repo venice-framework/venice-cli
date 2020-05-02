@@ -1,7 +1,6 @@
-const { log, error, fetch, divider } = require("../utils");
+const { log, error, fetch, divider, config } = require("../utils");
 // const SCHEMA_URL = "http://schema-registry:8081/subjects";
-const SCHEMA_URL = "http://localhost:8081/subjects";
-
+const SCHEMA_URL = `${config.SCHEMA_REGISTRY_URL}/subjects`;
 const validSchemaCommands = `
   "venice schemas": prints all the current schemas
 
