@@ -19,7 +19,7 @@ const POSTGRES_TEMPLATE = {
     "connection.password": `${config.POSTGRES_PASSWORD}`,
     topics: "PROVIDED BY INPUT",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
-    "value.converter.schema.registry.url": `${config.SCHEMA_REGISTRY_URL}`,
+    "value.converter.schema.registry.url": `${config.SCHEMA_DOCKER_URL}`,
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "auto.create": "true",
     "auto.evolve": "true",
@@ -119,17 +119,17 @@ const CONNECT = {
         answers,
         topics
       );
-      const newConnectorFilePath = `./created_connectors/postgres-${answers.connector_name}.json`;
+      const newConnectorFilePath = `./connectors/postgres-${mergedAnswers.name}.json`;
 
       CONNECT.postNewConnectorRequest(mergedAnswers).then(resp => {
         if (resp.status === 201) {
-          fs.mkdir("./created_connectors", { recursive: true }, err => {
+          fs.mkdir("./connectors", { recursive: true }, err => {
             if (err) throw err;
           });
 
           fs.writeFileSync(newConnectorFilePath, JSON.stringify(mergedAnswers));
           log(
-            `Successfully added ${mergedAnswers.name} as connection and saved config at ./created_connectors/postgres/${mergedAnswers.name}.json`
+            `Successfully added ${mergedAnswers.name} as connection and saved config at ${newConnectorFilePath}`
           );
         } else {
           throw new Error(

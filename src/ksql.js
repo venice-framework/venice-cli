@@ -40,7 +40,7 @@ const ksql = {
 
     const cmd =
       `docker run --rm --name ksql-cli -it --network=${network} ` +
-      `confluentinc/cp-ksql-cli:5.4.1 ${config.KSQL_SERVER_URL}`;
+      `confluentinc/cp-ksql-cli:5.4.1 ${config.KSQL_DOCKER_URL}`;
     const launchKsql = spawnPromise(cmd, {
       stdio: "inherit",
       shell: true

@@ -8,8 +8,6 @@ const { displayManual } = require("./manual");
 const { install } = require("./install");
 const { psqlCLI } = require("./psql");
 
-//  URLS - eventually these should all be docker URLS or ENV variables - can this line be removed?
-
 const checkForAlias = command => {
   const aliases = {
     "-c": "connectors",
