@@ -1,6 +1,6 @@
 const { getTopics } = require("./topics");
 const fs = require("fs");
-const { log, error, fetch, divider } = require("../utils");
+const { log, error, fetch, divider, config } = require("../utils");
 const { promptUserInput } = require("../lib/inquirer");
 
 const validConnectorsCommands = `
@@ -11,24 +11,20 @@ const validConnectorsCommands = `
   "venice -c" is an alias for "venice connectors" and will work with all of these commands
 `;
 
-// CONSTANTS
-const CONNECT_URL = "http://localhost:8083/connectors";
-// const CONNECT_URL = "http://kafka-connect:8083/connectors";
-
 const POSTGRES_TEMPLATE = {
   name: "PROVIDED BY INPUT",
   config: {
-    "connection.url": "PROVIDED BY INPUT",
-    "connection.user": "venice_user",
-    "connection.password": "venice",
+    "connection.user": `${config.POSTGRES_USER}`,
+    "connection.password": `${config.POSTGRES_PASSWORD}`,
     topics: "PROVIDED BY INPUT",
     "value.converter": "io.confluent.connect.avro.AvroConverter",
-    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "value.converter.schema.registry.url": `${config.SCHEMA_REGISTRY_URL}`,
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "auto.create": "true",
     "auto.evolve": "true",
     "insert.mode": "PROVIDED BY INPUT",
-    "tasks.max": "CALCULATED BY TOPIC PARTITION SIZED"
+    "tasks.max": "CALCULATED BY TOPIC PARTITION SIZED",
+    "connection.url": `jdbc:postgresql://${config.POSTGRES_HOST}:${config.POSTGRES_PORT}/${config.POSTGRES_DB}`
   }
 };
 
@@ -56,6 +52,7 @@ const CONNECT = {
   },
 
   showConnectors: () => {
+    console.log(config);
     CONNECT.getConnectors()
       .then(CONNECT.getAllConnectorsStatus)
       .then(CONNECT.printConnectors)
@@ -69,7 +66,7 @@ const CONNECT = {
   },
 
   getConnectors: () => {
-    return fetch(CONNECT_URL)
+    return fetch(config.CONNECT_URL)
       .then(res => res.json())
       .catch(err => error(err));
   },
@@ -77,7 +74,7 @@ const CONNECT = {
   getAllConnectorsStatus: connectors => {
     return Promise.all(
       connectors.map(async name => {
-        let status = await fetch(`${CONNECT_URL}/${name}/status`);
+        let status = await fetch(`${config.CONNECT_URL}/${name}/status`);
         return status.json();
       })
     );
@@ -114,6 +111,8 @@ const CONNECT = {
   newConnection: async () => {
     // LIMITATION - UPSERT only works if the key is a string.
     try {
+      const topics = await getTopics();
+
       const questions = CONNECT.setQuestions(topics);
       const answers = await promptUserInput(questions);
       const mergedAnswers = await CONNECT.mergeAnswersWithTemplate(
@@ -155,13 +154,6 @@ const CONNECT = {
     } else {
       return [
         {
-          name: "dbname",
-          type: "input",
-          message:
-            "Enter the name of your postgres database:\n" +
-            "If you are using the Venice default, input 'venice'"
-        },
-        {
           type: "input",
           name: "connector_name",
           message: "What would you like to name the new sink connection?"
@@ -193,9 +185,6 @@ const CONNECT = {
     template.config["topics"] = answers.topic;
     template.config["connector.class"] =
       "io.confluent.connect.jdbc.JdbcSinkConnector";
-    template.config[
-      "connection.url"
-    ] = `jdbc:postgresql://postgres:5432/${answers.dbname}`;
     template.config["tasks.max"] = CONNECT.calculateTasks(
       answers.topic,
       topics
@@ -220,7 +209,7 @@ const CONNECT = {
   postNewConnectorRequest: async answers => {
     const json = await JSON.stringify(answers);
 
-    const response = await fetch(CONNECT_URL, {
+    const response = await fetch(config.CONNECT_URL, {
       method: "POST",
       body: json,
       headers: {
@@ -263,7 +252,7 @@ const CONNECT = {
     ];
   },
   postDeleteConnectorRequest: async answers => {
-    const path = `${CONNECT_URL}/${answers.connector}`;
+    const path = `${config.CONNECT_URL}/${answers.connector}`;
 
     return await fetch(path, {
       method: "DELETE"

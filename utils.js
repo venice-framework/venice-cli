@@ -5,11 +5,13 @@ const fetch = require("node-fetch");
 const inquirer = require("inquirer");
 const spawnPromise = require("child-process-promise").spawn;
 const Spinner = require("clui").Spinner;
+const config = require("dotenv").config().parsed;
 
 const blue = color.xterm(68);
 const orange = color.xterm(209);
 
 const util = {
+  config,
   blue,
   clui,
   color,
