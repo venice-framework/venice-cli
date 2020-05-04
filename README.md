@@ -15,7 +15,7 @@ Steps:
 
 1. Clone this repository
 
-- `git clone git@github.com:venice-framework/venice-cli.git`
+- `git clone https://github.com/venice-framework/venice-cli.git`
 
 2. Navigate into the newly installed `venice-cli` directory
 
@@ -31,7 +31,7 @@ Steps:
 
 Or use this single command that combines the four steps above:
 
-`git clone git@github.com:venice-framework/venice-cli.git && cd venice-cli && npm install && sudo npm link`
+`git clone https://github.com/venice-framework/venice-cli.git && cd venice-cli && npm install && sudo npm link`
 
 **Now you're ready to use the CLI from any console interface!** (It shouldn't be limited to this directory.)
 
@@ -76,9 +76,9 @@ Issue the following commands to use the Venice framework
 
 #### Topic Commands
 
-| Command     | Alias   | Function                                                     |
-| :---------- | :------ | :----------------------------------------------------------- |
-| topics      | -t      | view a list of the current topics                            |
+| Command     | Alias   | Function                                     |
+| :---------- | :------ | :------------------------------------------- |
+| topics      | -t      | view a list of the current topics            |
 | topics show | -t show | view the event stream from an existing topic |
 
 ##### Notes

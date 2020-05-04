@@ -4,15 +4,15 @@ const { selectRepo, confirm } = require("../lib/inquirer");
 const repoURLs = {
   venice: [
     "venice-postgres-sink",
-    "git@github.com:venice-framework/venice.git",
+    "https://github.com/venice-framework/venice.git",
   ],
   "python-producer": [
     "bus-producer-test",
-    "git@github.com:venice-framework/python-producer-test.git",
+    "https://github.com/venice-framework/python-producer-test.git",
   ],
   "python-consumer": [
     "python-consumer",
-    "git@github.com:venice-framework/python-consumer.git",
+    "https://github.com/venice-framework/python-consumer.git",
   ],
 };
 
